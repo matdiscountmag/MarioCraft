@@ -1,25 +1,13 @@
-// editor.js — Edit mode toggle, palette, place/delete tiles.
-// Full implementation in Phase 6. Stub for Phase 1.
+// editor.js — Edit mode: palette strip, tile placement/deletion, drag-to-pan, save/export.
 
-export function createEditor(levelData, renderer) {
-  let active = false;
+import { TILE_SIZE, LEVEL_COLS, LEVEL_ROWS, setTile, getTile, saveLevel } from './level.js';
+import {
+  drawSprite,
+  TILE_GROUND_TOP, TILE_GROUND, TILE_HARD, TILE_BRICK, TILE_QBLOCK, TILE_COIN,
+} from './sprites.js';
+import { VIEWPORT_W, VIEWPORT_H } from './renderer.js';
 
-  return {
-    get active() { return active; },
+// ── Palette layout ────────────────────────────────────────────────────────────
 
-    toggle() {
-      active = !active;
-      // TODO Phase 6: show/hide palette strip, grid overlay
-    },
-
-    update(/* input */) {
-      if (!active) return;
-      // TODO Phase 6: handle tap-to-place, tap-to-delete, long-press ? block
-    },
-
-    draw(/* ctx, camera */) {
-      if (!active) return;
-      // TODO Phase 6: draw palette strip and grid overlay
-    },
-  };
-}
+const PALETTE_W   = 32;
+const PALETTE_X   

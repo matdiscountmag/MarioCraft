@@ -1,7 +1,7 @@
 // main.js — Bootstrap + game loop.
 
 import { createInput }   from './input.js';
-import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS } from './level.js';
+import { loadLevel, createLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
 import { Renderer, createCamera, updateCamera } from './renderer.js';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
@@ -18,11 +18,12 @@ const audio  = createAudio();
 const renderer = new Renderer(canvas);
 const camera   = createCamera();
 const level    = loadLevel();
-const editor   = createEditor(level, renderer);
+const editor   = createEditor(canvas, level);
 const player   = createPlayer(level.spawn.x, level.spawn.y);
 
-const entities       = [];   // Phase 8: enemies
-const LEVEL_PIXEL_WIDTH = LEVEL_COLS * TILE_SIZE;
+const entities          = [];   // Phase 8: enemies
+const LEVEL_PIXEL_WIDTH  = LEVEL_COLS * TILE_SIZE;
+const LEVEL_PIXEL_HEIGHT = LEVEL_ROWS * TILE_SIZE;
 
 // ─── Particles, items & state ─────────────────────────────────────────────────
 
@@ -36,12 +37,11 @@ let   coins      = 0;    // total coins collected
 
 function activateQBlock(col, row) {
   setTile(level, col, row, 'used');
-  const key = `${col},${row}`;
-  const contents = level.qblockContents?.[key] ?? 'coin';
-  if (contents === 'coin') {
+  // Random contents: 70% coin, 30% mushroom
+  if (Math.random() < 0.7) {
     coinPops.push(createCoinPop(col, row));
     coins++;
-  } else if (contents === 'mushroom') {
+  } else {
     items.push(createMushroom(col, row));
   }
 }
@@ -86,6 +86,33 @@ if (modeBtn) {
   });
 }
 
+// ─── Reset + Export ───────────────────────────────────────────────────────────
+
+const resetBtn = document.getElementById('btn-reset');
+if (resetBtn) {
+  resetBtn.addEventListener('click', () => {
+    if (!confirm('Reset level to default? This cannot be undone.')) return;
+    localStorage.removeItem('mario-tablet:level:custom');
+    window.location.reload();
+  });
+}
+
+const exportBtn = document.getElementById('btn-export');
+if (exportBtn) {
+  exportBtn.addEventListener('click', () => {
+    const json = JSON.stringify(level, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'level.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
+
 // ─── Debug + dev keys ────────────────────────────────────────────────────────
 
 window.addEventListener('keydown', e => {
@@ -106,10 +133,16 @@ function loop(now) {
   input.poll();
 
   if (editor.active) {
-    editor.update(input.state);
+    editor.update(camera);
   } else {
     player.update(dt, input.state, level, world);
-    updateCamera(camera, player.x + player.w / 2, LEVEL_PIXEL_WIDTH);
+    updateCamera(
+      camera,
+      player.x + player.w / 2,
+      player.y + player.h / 2,
+      LEVEL_PIXEL_WIDTH,
+      LEVEL_PIXEL_HEIGHT,
+    );
 
     // Collect floating coin tiles on contact
     const c0 = Math.floor(player.x / TILE_SIZE);
@@ -129,42 +162,4 @@ function loop(now) {
       if (!item.alive) { items.splice(i, 1); continue; }
       if (!item.emerging && item.type === 'mushroom') {
         if (player.x < item.x + item.w && player.x + player.w > item.x &&
-            player.y < item.y + item.h && player.y + player.h > item.y) {
-          if (player.state === 'small') player.state = 'super';
-          items.splice(i, 1);
-        }
-      }
-    }
-
-    // Update coin pop animations
-    for (let i = coinPops.length - 1; i >= 0; i--) {
-      coinPops[i].update(dt);
-      if (!coinPops[i].alive) coinPops.splice(i, 1);
-    }
-
-    // Tick debris particles
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x += p.vx * dt; p.y += p.vy * dt;
-      p.vy += 0.35 * dt;
-      p.life -= dt;
-      if (p.life <= 0) particles.splice(i, 1);
-    }
-
-    // Tick block bumps
-    for (let i = blockBumps.length - 1; i >= 0; i--) {
-      blockBumps[i].timer += dt;
-      if (blockBumps[i].timer >= blockBumps[i].maxTimer) blockBumps.splice(i, 1);
-    }
-  }
-
-  renderer.draw(level, camera, entities, player, {
-    pMeter: player.pMeter, particles, blockBumps, coins,
-    items: [...items, ...coinPops],
-  });
-  editor.draw(renderer.ctx, camera);
-
-  requestAnimationFrame(loop);
-}
-
-requestAnimationFrame(loop);
+   

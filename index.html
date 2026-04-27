@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MarioCraft</title>
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 
@@ -16,9 +16,14 @@
   <!-- HUD bar -->
   <div id="hud">
     <button id="btn-mode">✎ Edit</button>
+    <!-- Edit-mode tools (hidden in play mode) -->
+    <div id="edit-tools" style="display:none; gap:6px; align-items:center;">
+      <button id="btn-reset">↺ Reset</button>
+      <button id="btn-export">↓ Export</button>
+    </div>
   </div>
 
-  <!-- Touch controls (Phase 3 will wire these up) -->
+  <!-- Touch controls (hidden in edit mode) -->
   <div id="controls">
     <!-- D-pad -->
     <div id="dpad">
@@ -43,6 +48,6 @@
   <div>Rotate to landscape to play</div>
 </div>
 
-<script type="module" src="src/main.js?v=6"></script>
+<script type="module" src="src/main.js?v=7"></script>
 </body>
 </html>

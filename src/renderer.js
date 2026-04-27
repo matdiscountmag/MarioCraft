@@ -28,6 +28,18 @@ const TILE_SPRITES = {
   pipe_sr:    TILE_PIPE_SR,
 };
 
+// World-space cloud positions (fixed in the sky, visible when camera is near top)
+const CLOUDS = [
+  { wx: 64,   wy: 24,  w: 32, h: 16 },
+  { wx: 200,  wy: 16,  w: 48, h: 16 },
+  { wx: 360,  wy: 28,  w: 32, h: 12 },
+  { wx: 550,  wy: 20,  w: 48, h: 16 },
+  { wx: 720,  wy: 26,  w: 32, h: 12 },
+  { wx: 900,  wy: 18,  w: 48, h: 16 },
+  { wx: 1100, wy: 24,  w: 32, h: 16 },
+  { wx: 1300, wy: 20,  w: 48, h: 16 },
+];
+
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -45,7 +57,7 @@ export class Renderer {
     ctx.fillStyle = PALETTE.S;
     ctx.fillRect(0, 0, VIEWPORT_W, VIEWPORT_H);
 
-    this._drawClouds(camera.x);
+    this._drawClouds(camera);
     this._drawTiles(levelData, camera, blockBumps);
     this._drawParticles(particles, camera);
 
@@ -91,10 +103,6 @@ export class Renderer {
         const sprite = TILE_SPRITES[tileId];
         if (sprite) {
           drawSprite(ctx, sprite, px, py);
-        } else if (tileId === 'spawn') {
-          ctx.fillStyle = '#00A848';
-          ctx.fillRect(px + 6, py + 2, 2, 12);
-          ctx.fillRect(px + 8, py + 2, 6, 6);
         }
       }
     }
@@ -115,23 +123,15 @@ export class Renderer {
     ctx.globalAlpha = 1;
   }
 
-  _drawClouds(camX) {
+  _drawClouds(camera) {
     const { ctx } = this;
-    const clouds = [
-      { wx: 64,   wy: 20, w: 32, h: 16 },
-      { wx: 200,  wy: 16, w: 48, h: 16 },
-      { wx: 360,  wy: 24, w: 32, h: 12 },
-      { wx: 550,  wy: 18, w: 48, h: 16 },
-      { wx: 720,  wy: 22, w: 32, h: 12 },
-      { wx: 900,  wy: 16, w: 48, h: 16 },
-      { wx: 1100, wy: 20, w: 32, h: 16 },
-      { wx: 1300, wy: 18, w: 48, h: 16 },
-    ];
     ctx.fillStyle = PALETTE.W;
-    for (const c of clouds) {
-      const sx = c.wx - camX;
+    for (const c of CLOUDS) {
+      const sx = c.wx - camera.x;
+      const sy = c.wy - camera.y;
       if (sx + c.w < 0 || sx > VIEWPORT_W) continue;
-      this._fillCloud(sx, c.wy, c.w, c.h);
+      if (sy + c.h < 0 || sy > VIEWPORT_H) continue;
+      this._fillCloud(sx, sy, c.w, c.h);
     }
   }
 
@@ -173,13 +173,13 @@ export function createCamera() {
   return { x: 0, y: 0 };
 }
 
-export function updateCamera(camera, targetX, levelPixelWidth) {
-  const DEAD_ZONE = 32;
+/**
+ * Smooth-follow camera with a horizontal and vertical dead zone.
+ * targetX / targetY are the world-space coords to centre on (e.g. player centre).
+ */
+export function updateCamera(camera, targetX, targetY, levelPixelWidth, levelPixelHeight) {
+  const DEAD_X = 32;
   const targetCamX = targetX - VIEWPORT_W / 2;
-  const diff = targetCamX - camera.x;
-  if (Math.abs(diff) > DEAD_ZONE / 2) {
-    camera.x += diff - Math.sign(diff) * DEAD_ZONE / 2;
-  }
-  camera.x = Math.max(0, Math.min(levelPixelWidth - VIEWPORT_W, camera.x));
-  camera.y = 0;
-}
+  const diffX = targetCamX - camera.x;
+  if (Math.abs(diffX) > DEAD_X / 2) {
+    

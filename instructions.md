@@ -282,7 +282,7 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 - **Phase 1 — Skeleton** ✅: index.html, canvas, hardcoded test level (ground row + a few bricks). No player.
 - **Phase 2 — Player movement** ✅: Nicky sprite, walk/run/jump physics, AABB tile collision, camera follow. Keyboard only. Jump latch input fix. Level layout tuned for reachable ? blocks.
 - **Phase 3 — Touch controls** ✅: D-pad + A/B virtual buttons. Hit targets ≥64px. `touch-action: none` on controls. Test on iPad. (`setVirtualKey()` already scaffolded in `input.js`.)
-- **Phase 4 — Environment physics**: Block interactions — bump ? blocks from below (spawn coin/mushroom/tail item), break bricks when Super, coins collectible on contact, used-block state after empty. Powerup items spawn, fall, slide, and are collected. Mushroom: Small→Super power state.
+- **Phase 4 — Environment physics** ✅: Brick breaking (Super smashes, Small bonks), ? blocks spawn coin pop (+1 instant) or mushroom item, floating coins collectible on contact, mushroom emerges → slides → collected (Small→Super). New: src/items.js. Dev: P key toggles small/super.
 - **Phase 5 — Edit mode**: Toggle, palette, place/delete, save/load, JSON export.
 - **Phase 6 — Graphics overhaul**: Redraw all sprites (Nicky, tiles, enemies) to NES quality. Improve tile variety, add background details (clouds, hills). This is a dedicated art pass — do not mix with gameplay changes.
 - **Phase 7 — Polish**: Coin counter, lives, win condition (goal post), death/respawn animation, game over screen.
@@ -399,7 +399,7 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 1 — Skeleton
 - [x] Phase 2 — Player movement (Nicky, physics, input latch, level layout)
 - [x] Phase 3 — Touch controls
-- [ ] Phase 4 — Environment physics (block interactions, coins, mushroom)
+- [x] Phase 4 — Environment physics (brick breaking, ? blocks, coins, Mushroom → Super)
 - [ ] Phase 5 — Edit mode
 - [ ] Phase 6 — Graphics overhaul
 - [ ] Phase 7 — Polish

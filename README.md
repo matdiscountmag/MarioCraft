@@ -14,7 +14,7 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 1 — Skeleton
 - [x] Phase 2 — Player movement (Nicky, physics, input latch)
 - [x] Phase 3 — Touch controls (D-pad + A/B, portrait overlay)
-- [ ] Phase 4 — Environment physics (? blocks, brick breaking, coins, Mushroom → Super)
+- [x] Phase 4 — Environment physics (brick breaking, ? blocks, coin collection, Mushroom → Super)
 - [ ] Phase 5 — Edit mode (toggle, palette, place/delete, save/load, JSON export)
 - [ ] Phase 6 — Graphics overhaul (sprite redraw, tile variety, background details)
 - [ ] Phase 7 — Polish (coin counter, lives, goal post, death/respawn, game over)

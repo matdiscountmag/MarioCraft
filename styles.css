@@ -42,7 +42,7 @@ html, body {
   display: block;
 }
 
-/* ── HUD bar (Play/Edit toggle) ─────────────────────────────────────── */
+/* ── HUD bar (Play/Edit toggle + edit tools) ────────────────────────── */
 
 #hud {
   position: absolute;
@@ -75,6 +75,13 @@ html, body {
 
 #hud button:active {
   background: #444;
+}
+
+#edit-tools {
+  pointer-events: all;
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 /* ── Touch control overlay (Phase 3) ────────────────────────────────── */
