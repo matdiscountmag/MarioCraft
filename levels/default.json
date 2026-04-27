@@ -1,0 +1,13 @@
+{
+  "width": 96,
+  "height": 14,
+  "spawn": { "x": 2, "y": 11 },
+  "tiles": null,
+  "entities": [
+    { "type": "stomper", "x": 240, "y": 176 }
+  ],
+  "qblockContents": {
+    "12,8": "mushroom",
+    "20,8": "coin"
+  }
+}
