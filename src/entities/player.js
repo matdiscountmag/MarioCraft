@@ -146,12 +146,16 @@ export function createPlayer(spawnCol, spawnRow) {
     draw(ctx, camera) {
       if (this.invulnTimer > 0 && Math.floor(this.invulnTimer / 4) % 2 === 0) return;
       const sx = Math.round(this.x - camera.x);
-      const sy = Math.round(this.y - camera.y);
+      let sy = Math.round(this.y - camera.y);
       let sprite;
-      if (!this.onGround)            sprite = PLAYER_SMALL_JUMP_R;
-      else if (Math.abs(this.vx) > 0.1)
+      if (!this.onGround) {
+        sprite = PLAYER_SMALL_JUMP_R;
+      } else if (Math.abs(this.vx) > 0.1) {
         sprite = this.walkFrame === 0 ? PLAYER_SMALL_WALK1_R : PLAYER_SMALL_WALK2_R;
-      else                           sprite = PLAYER_SMALL_STAND_R;
+        sy -= this.walkFrame;  // 1px bob: frame 1 shifts up, frame 0 stays put
+      } else {
+        sprite = PLAYER_SMALL_STAND_R;
+      }
       drawSprite(ctx, sprite, sx, sy, !this.facingRight);
     },
   };
