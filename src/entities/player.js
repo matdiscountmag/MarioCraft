@@ -18,6 +18,9 @@ const PHYS = {
   invulnAfterHit: 90,
 };
 
+const COYOTE_FRAMES = 7;   // grace frames after leaving ground
+const JUMP_BUFFER_FRAMES = 8; // frames a buffered jump press stays valid
+
 export function createPlayer(spawnCol, spawnRow) {
   return {
     x: spawnCol * 16, y: spawnRow * 16,
@@ -25,7 +28,9 @@ export function createPlayer(spawnCol, spawnRow) {
     w: 16, h: 16,
     state: 'small',
     onGround: false, facingRight: true,
-    jumpHeld: false, jumpHoldFrames: 0,
+    jumpHeld: false, jumpHoldFrames: 0, jumpJustFired: false,
+    coyoteTimer: 0,   // counts down after leaving ground
+    jumpBuffer: 0,    // counts down after jumpPressed fires
     pMeter: 0,
     walkFrame: 0, walkTimer: 0,
     invulnTimer: 0,
@@ -59,20 +64,41 @@ export function createPlayer(spawnCol, spawnRow) {
       else
         this.pMeter = Math.max(0, this.pMeter - PHYS.pMeterDrainRate * dt);
 
-      // Jump — fire on press
-      if (input.jumpPressed && this.onGround) {
+      // Coyote time: count down frames since last left the ground
+      if (this.onGround) {
+        this.coyoteTimer = COYOTE_FRAMES;
+      } else {
+        this.coyoteTimer = Math.max(0, this.coyoteTimer - dt);
+      }
+
+      // Jump buffer: latch a jump press for several frames
+      if (input.jumpPressed) {
+        this.jumpBuffer = JUMP_BUFFER_FRAMES;
+      } else {
+        this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
+      }
+
+      // Jump — fire when buffered press meets ground (or coyote window)
+      const canJump = this.onGround || this.coyoteTimer > 0;
+      this.jumpJustFired = false;
+      if (this.jumpBuffer > 0 && canJump && this.vy >= 0) {
         const bonus = Math.abs(this.vx) >= PHYS.runMaxSpeed * 0.8 ? PHYS.runJumpBonus : 0;
         this.vy = PHYS.jumpImpulse + bonus;
         this.jumpHeld = true;
         this.jumpHoldFrames = 0;
+        this.jumpJustFired = true; // suppress hold-cut on this exact frame
+        this.jumpBuffer = 0;
+        this.coyoteTimer = 0;
       }
 
-      // Jump hold
+      // Jump hold — variable height via early release
       if (this.jumpHeld) {
         if (input.jump && this.jumpHoldFrames < PHYS.maxHoldFrames) {
           this.vy += PHYS.jumpHoldExtra * dt;
           this.jumpHoldFrames += dt;
-        } else if (!input.jump) {
+        } else if (!input.jump && !this.jumpJustFired) {
+          // Cut jump height on release, but never on the frame the jump fired
+          // (tap jumps pressed+released within one frame still get a real jump)
           if (this.vy < -PHYS.jumpReleaseCutoff) this.vy = -PHYS.jumpReleaseCutoff;
           this.jumpHeld = false;
         }

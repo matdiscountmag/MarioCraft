@@ -47,19 +47,19 @@ If the user asks for something that crosses the line, push back politely and off
 
 ## 3. Player character
 
-A humanoid hero with a cap and overalls. Three power states.
+**Name: Nicky.** A humanoid hero with a pink cap and purple overalls. Three power states.
 
 | State | Sprite size | Abilities |
 |---|---|---|
 | Small | 16×16 | Walk, run, jump. 1 hit = die. |
 | Super | 16×32 | Above + break bricks from below + 1 extra hit before reverting to Small. |
-| Caped | 16×32 | Above + spin attack (B in air or while not running) + flight when P-meter is full and player jumps with run held. |
+| Caped | 16×32 | Above + spin attack (B in air or while not running). |
 
-(Naming note: "Caped" is our equivalent of the SMB3 raccoon form. Visual: small cape, no animal ears or tail.)
+(Naming note: "Caped" is our equivalent of the SMB3 raccoon form. Visual: small cape, no animal ears or tail. No flight / P-meter — that system was cut to keep scope manageable.)
 
-### Physics constants (start here, tune by feel)
+### Physics constants (tuned — these are the live values, do not revert)
 
-Game-pixels per frame at 60fps. SMB3-ish starting values.
+Game-pixels per frame at 60fps.
 
 ```
 gravity:               0.45
@@ -70,18 +70,15 @@ walkMaxSpeed:          1.9
 runMaxSpeed:           3.2
 groundFriction:        0.16
 airFriction:           0.04
-jumpImpulse:           -4.8     # base
-jumpHoldExtra:         -0.30    # per frame while A held, max 12 frames
-jumpReleaseCutoff:     0.5      # if A released and vy < this, clamp vy to this
-runJumpBonus:          -1.2     # added to jumpImpulse when running fast
-pMeterFillRate:        0.018    # per frame at runMaxSpeed
-pMeterDrainRate:       0.012    # when below run speed
-flyImpulse:            -3.2     # per A-tap while flying
+jumpImpulse:           -5.5     # tuned for 4-tile standing jump
+jumpHoldExtra:         -0.28    # per frame while A held, max 12 frames
+jumpReleaseCutoff:     1.5      # if A released and vy < -this, clamp vy to -this
+runJumpBonus:          -1.5     # added to jumpImpulse when running fast
 spinDuration:          18       # frames
 invulnAfterHit:        90       # frames
 ```
 
-Feel benchmarks: ~4-tile standing jump, ~5 tiles running, ~6 tiles with full run-up. Heavy gravity on the way down.
+Feel benchmarks: ~4-tile standing jump (confirmed), ~6 tiles running hold (confirmed). Heavy gravity on the way down.
 
 ### Variable jump
 
@@ -140,18 +137,18 @@ Pipe green dk:     #006800
 Pipe green hl:     #B0E848
 Coin gold:         #F8B800
 Coin gold dk:      #A87000
-Player primary:    #00A848    # green — distinct from Mario red
-Player primary dk: #006800
-Player accent:     #F83800
-Skin pink:         #FCB89C
-Hair brown:        #883800
+Nicky pink:        #F878B8    # N in sprite palettes
+Nicky pink dk:     #A02060    # n in sprite palettes
+Nicky outfit:      #7840C8    # V — purple overalls
+Skin:              #FCB89C    # Z
+Shoes brown:       #883800    # H
 Black:             #000000
 White:             #F8F8F8
 Stomper brown:     #B85820
 Stomper light:     #FCB89C
 ```
 
-Player base color is **green** (not red) — keeps us clearly out of trademark territory while staying in the NES palette. Revisit only if the user wants a different original color.
+Nicky's color scheme: pink cap + highlights (N=#F878B8), dark pink shading (n=#A02060), purple outfit (V=#7840C8), skin (Z=#FCB89C), dark brown shoes (H=#883800). These are already live in `sprites.js` and `player-sprites.js`.
 
 ---
 
@@ -191,21 +188,17 @@ mario-tablet/
 Each sprite is an array of equal-length strings. Each character maps to a color in `PALETTE`. `.` = transparent.
 
 ```js
-export const PALETTE = {
-  G: '#00A848', g: '#006800',  // player primary
-  R: '#F83800', r: '#A02000',  // player accent
-  P: '#FCB89C', H: '#883800',
-  K: '#000000', W: '#F8F8F8',
-  // ...
-};
-
-export const PLAYER_SMALL_RIGHT = [
-  "................",
-  ".....GGGG.......",
-  "....GGGGGGGG....",
-  // ... 16 rows total
-];
+// Key palette entries (see sprites.js for full map)
+// N=#F878B8  n=#A02060  V=#7840C8   // Nicky pink / dark pink / purple outfit
+// Z=#FCB89C  H=#883800               // skin / shoes
+// Y=#F8B800  B=#C84800  b=#803800    // block yellow / brick orange / brick dark
+// G=#50A800  g=#006800  L=#B0E848    // pipe / pipe dark / pipe highlight
+// O=#D88040  o=#A04000               // ground tan / ground dark
+// C=#F8B800  c=#A87000               // coin / coin dark
+// K=#000000  W=#F8F8F8  .=transparent
 ```
+
+Sprites are arrays of equal-length strings, 1 char = 1 game pixel. `drawSprite(ctx, sprite, px, py, flipX)` renders them. Nicky sprites live in `player-sprites.js` (split from `sprites.js` to stay under 300 lines).
 
 Render: iterate rows × cols, fill 1×1 rect at game-pixel coords, scale via canvas size + `imageRendering: pixelated`. Flip horizontally by reversing column order at draw time (don't store mirrored copies).
 
@@ -286,13 +279,13 @@ HUD has Play/Edit toggle.
 
 Each phase ends with a working, playable build. Don't bundle phases. Deploy to Pages is **manual and per-milestone** (not per-phase) — see §13.
 
-- **Phase 1 — Skeleton**: index.html, canvas, hardcoded test level (ground row + a few bricks). No player. After upload, verify it renders crisp on iPad.
-- **Phase 2 — Player movement**: small player sprite, walk/run/jump physics, AABB tile collision, camera follow. Keyboard only.
-- **Phase 3 — Touch controls**: D-pad + A/B virtual buttons. Hit targets ≥64px. `touch-action: none` on controls. Test on iPad.
-- **Phase 4 — Enemies & power-ups**: Stomper, Shellback green, Mushroom, Super state.
-- **Phase 5 — Caped & P-meter**: Cape powerup, P-meter UI, spin attack, flight.
-- **Phase 6 — Edit mode**: Toggle, palette, place/delete, save/load, JSON export.
-- **Phase 7 — Polish**: coin counter, lives, win condition, death/respawn, game over screen.
+- **Phase 1 — Skeleton** ✅: index.html, canvas, hardcoded test level (ground row + a few bricks). No player.
+- **Phase 2 — Player movement** ✅: Nicky sprite, walk/run/jump physics, AABB tile collision, camera follow. Keyboard only. Jump latch input fix. Level layout tuned for reachable ? blocks.
+- **Phase 3 — Touch controls**: D-pad + A/B virtual buttons. Hit targets ≥64px. `touch-action: none` on controls. Test on iPad. (`setVirtualKey()` already scaffolded in `input.js`.)
+- **Phase 4 — Enemies & power-ups**: Stomper AI, Shellback green, Mushroom (Small→Super), Cape (Super→Caped with spin attack — no flight, no P-meter).
+- **Phase 5 — Edit mode**: Toggle, palette, place/delete, save/load, JSON export.
+- **Phase 6 — Graphics overhaul**: Redraw all sprites (Nicky, tiles, enemies) to NES quality. Improve tile variety, add background details (clouds, hills). This is a dedicated art pass — do not mix with gameplay changes.
+- **Phase 7 — Polish**: Coin counter, lives, win condition (goal post), death/respawn animation, game over screen.
 - **Phase 8 — Stretch**: SFX, more enemies (Spikeplant, Cannonball, Shellback red).
 
 When a phase ships: tick its box in `README.md` Status, append to §16 Decisions log here, and tell the user it's ready to upload to GitHub Pages. Bump the cache-bust `?v=` number on script/style tags in `index.html`.
@@ -375,7 +368,10 @@ Safari caches aggressively, and the upload-and-wait loop is already slow — sta
 
 Append-only. Format: `YYYY-MM-DD — <change>`.
 
-- **2026-04-26** — Project kicked off. Visual style: NES pixel art, original sprite designs in SMB3 aesthetic. Player primary color: green (not Mario red) for clarity-of-origin. Level width: ~6 screens. Stack: vanilla HTML+JS+Canvas, no build step. Edit mode is v1. Hosting: GitHub Pages. Dev tool: Claude Cowork with persistent local files.
+- **2026-04-26** — Project kicked off. Visual style: NES pixel art, original sprite designs in SMB3 aesthetic. Level width: ~6 screens. Stack: vanilla HTML+JS+Canvas, no build step. Hosting: GitHub Pages.
+- **2026-04-26** — Phase 1 shipped. Canvas renders crisp on iPad.
+- **2026-04-26** — Phase 2 shipped. Player character renamed Nicky, colors changed to pink/purple. Physics tuned: jumpImpulse -5.5, runJumpBonus -1.5, jumpReleaseCutoff 1.5 — confirmed 4-tile standing / 6-tile running jumps. Input rewritten with keydown latch to fix 70% jump-miss bug. Level layout redesigned so all ? blocks have clear jump paths from ground. Physics rewritten as directional leading-edge AABB.
+- **2026-04-26** — Removed P-meter and flight from scope (was Phase 5). Cape powerup now gives spin attack only. Phase numbering updated. Graphics overhaul added as dedicated Phase 6 (not mixed with gameplay work).
 
 ---
 
@@ -395,12 +391,12 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 
 ## Status
 
-- [ ] Phase 1 — Skeleton
-- [ ] Phase 2 — Player movement
+- [x] Phase 1 — Skeleton
+- [x] Phase 2 — Player movement (Nicky, physics, input latch, level layout)
 - [ ] Phase 3 — Touch controls
 - [ ] Phase 4 — Enemies & power-ups
-- [ ] Phase 5 — Caped & P-meter
-- [ ] Phase 6 — Edit mode
+- [ ] Phase 5 — Edit mode
+- [ ] Phase 6 — Graphics overhaul
 - [ ] Phase 7 — Polish
 - [ ] Phase 8 — Stretch
 ```
