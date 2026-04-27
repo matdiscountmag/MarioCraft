@@ -4,7 +4,9 @@
 
 // Standing idle — from SmallMario.csv
 // CSV color key: b→K (black), r→B (brick-red), p→Z (peach), empty→.
+// Empty row at top so shoe base lands at row 15, flush with physics bottom.
 export const PLAYER_SMALL_STAND_R = [
+  '................',  // empty top
   '.....KKKKKK.....',  // cap peak
   '....KBBBBBBKK...',  // cap
   '...KBBBBBBBBBK..',  // cap wide
@@ -19,12 +21,12 @@ export const PLAYER_SMALL_STAND_R = [
   '...KZZZKKZKK....',  // overalls/legs
   '...KZZBBKKKK....',  // shoes top
   '....KBBBBK......',  // shoes
-  '....KKKKKK......',  // shoe base
-  '................',  // empty row
+  '....KKKKKK......',  // shoe base — row 15, flush with ground
 ];
 
 // Walk frame 1 — placeholder until walk CSV is provided
 export const PLAYER_SMALL_WALK1_R = [
+  '................',
   '.....KKKKKK.....',
   '....KBBBBBBKK...',
   '...KBBBBBBBBBK..',
@@ -40,11 +42,11 @@ export const PLAYER_SMALL_WALK1_R = [
   '...KZZBBKKKK....',
   '....KBBBBK......',
   '....KKKKKK......',
-  '................',
 ];
 
 // Walk frame 2 — placeholder until walk CSV is provided
 export const PLAYER_SMALL_WALK2_R = [
+  '................',
   '.....KKKKKK.....',
   '....KBBBBBBKK...',
   '...KBBBBBBBBBK..',
@@ -60,11 +62,11 @@ export const PLAYER_SMALL_WALK2_R = [
   '...KZZBBKKKK....',
   '....KBBBBK......',
   '....KKKKKK......',
-  '................',
 ];
 
 // Jump — placeholder until jump CSV is provided
 export const PLAYER_SMALL_JUMP_R = [
+  '................',
   '.....KKKKKK.....',
   '....KBBBBBBKK...',
   '...KBBBBBBBBBK..',
@@ -80,5 +82,4 @@ export const PLAYER_SMALL_JUMP_R = [
   '...KZZBBKKKK....',
   '....KBBBBK......',
   '....KKKKKK......',
-  '................',
 ];
