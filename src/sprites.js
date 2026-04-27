@@ -21,12 +21,14 @@ export const PALETTE = {
 // ── Ground ───────────────────────────────────────────────────────────────────
 
 export const TILE_GROUND_TOP = [
-  'GGGGGGGGGGGGGGGG',
-  'GgGGgGGgGGgGGgGG',
-  'gGGgGGgGGgGGgGGg',
-  'TTTtTTTtTTTtTTTt',
+  'gggggggggggggggg',  // dark green top edge (sky/grass border)
+  'GGGGGGGGGGGGGGGG',  // bright grass
+  'GgGGgGGgGGgGGgGG',  // mixed grass
+  'gGGgGGgGGgGGgGGg',  // mixed dark grass
+  'gggggggggggggggg',  // dark green shadow at base of grass
+  'tttttttttttttttt',  // dark tan separator line
+  'TTTtTTTtTTTtTTTt',  // dirt
   'TtTTTtTTTtTTTtTT',
-  'tttttttttttttttt',
   'TTTTTTTTTTTTTTTT',
   'TtTTTtTTTtTTTtTT',
   'TTtTTTtTTTtTTTtT',
@@ -35,8 +37,6 @@ export const TILE_GROUND_TOP = [
   'TTTtTTTtTTTtTTTt',
   'TtTTTtTTTtTTTtTT',
   'tttttttttttttttt',
-  'TTTTTTTTTTTTTTTT',
-  'TtTTTtTTTtTTTtTT',
 ];
 
 export const TILE_GROUND = [
