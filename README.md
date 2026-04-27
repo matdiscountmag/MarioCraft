@@ -2,7 +2,7 @@
 
 A single-level NES-style platformer with an in-game level editor, optimized for iPad.
 
-**Live**: https://<your-user>.github.io/<repo>/
+**Live**: https://matdiscountmag.github.io/MarioCraft/
 
 ## Controls
 
@@ -11,8 +11,8 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 
 ## Status
 
-- [ ] Phase 1 — Skeleton
-- [ ] Phase 2 — Player movement
+- [x] Phase 1 — Skeleton
+- [x] Phase 2 — Player movement
 - [ ] Phase 3 — Touch controls
 - [ ] Phase 4 — Enemies & power-ups
 - [ ] Phase 5 — Caped & P-meter
