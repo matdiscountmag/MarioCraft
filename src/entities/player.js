@@ -18,8 +18,8 @@ const PHYS = {
   invulnAfterHit: 90,
 };
 
-const COYOTE_FRAMES = 7;   // grace frames after leaving ground
-const JUMP_BUFFER_FRAMES = 8; // frames a buffered jump press stays valid
+const COYOTE_FRAMES = 7;
+const JUMP_BUFFER_FRAMES = 8;
 
 export function createPlayer(spawnCol, spawnRow) {
   return {
@@ -29,13 +29,14 @@ export function createPlayer(spawnCol, spawnRow) {
     state: 'small',
     onGround: false, facingRight: true,
     jumpHeld: false, jumpHoldFrames: 0, jumpJustFired: false,
-    coyoteTimer: 0,   // counts down after leaving ground
-    jumpBuffer: 0,    // counts down after jumpPressed fires
+    coyoteTimer: 0,
+    jumpBuffer: 0,
     pMeter: 0,
     walkFrame: 0, walkTimer: 0,
     invulnTimer: 0,
 
-    update(dt, input, levelData) {
+    // world: optional callbacks { breakBrick(col,row), bumpBlock(col,row) }
+    update(dt, input, levelData, world) {
       const isRunning = input.run;
       const maxSpeed  = isRunning ? PHYS.runMaxSpeed  : PHYS.walkMaxSpeed;
       const accel     = isRunning ? PHYS.runAccel     : PHYS.walkAccel;
@@ -64,21 +65,21 @@ export function createPlayer(spawnCol, spawnRow) {
       else
         this.pMeter = Math.max(0, this.pMeter - PHYS.pMeterDrainRate * dt);
 
-      // Coyote time: count down frames since last left the ground
+      // Coyote time
       if (this.onGround) {
         this.coyoteTimer = COYOTE_FRAMES;
       } else {
         this.coyoteTimer = Math.max(0, this.coyoteTimer - dt);
       }
 
-      // Jump buffer: latch a jump press for several frames
+      // Jump buffer
       if (input.jumpPressed) {
         this.jumpBuffer = JUMP_BUFFER_FRAMES;
       } else {
         this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
       }
 
-      // Jump — fire when buffered press meets ground (or coyote window)
+      // Jump fire
       const canJump = this.onGround || this.coyoteTimer > 0;
       this.jumpJustFired = false;
       if (this.jumpBuffer > 0 && canJump && this.vy >= 0) {
@@ -86,19 +87,17 @@ export function createPlayer(spawnCol, spawnRow) {
         this.vy = PHYS.jumpImpulse + bonus;
         this.jumpHeld = true;
         this.jumpHoldFrames = 0;
-        this.jumpJustFired = true; // suppress hold-cut on this exact frame
+        this.jumpJustFired = true;
         this.jumpBuffer = 0;
         this.coyoteTimer = 0;
       }
 
-      // Jump hold — variable height via early release
+      // Jump hold
       if (this.jumpHeld) {
         if (input.jump && this.jumpHoldFrames < PHYS.maxHoldFrames) {
           this.vy += PHYS.jumpHoldExtra * dt;
           this.jumpHoldFrames += dt;
         } else if (!input.jump && !this.jumpJustFired) {
-          // Cut jump height on release, but never on the frame the jump fired
-          // (tap jumps pressed+released within one frame still get a real jump)
           if (this.vy < -PHYS.jumpReleaseCutoff) this.vy = -PHYS.jumpReleaseCutoff;
           this.jumpHeld = false;
         }
@@ -109,6 +108,21 @@ export function createPlayer(spawnCol, spawnRow) {
 
       // Tile collision
       resolveEntity(this, levelData);
+
+      // Block interaction — head bump from below
+      if (this.hitCeiling && world) {
+        const { col, row, tileId } = this.hitCeiling;
+        if (tileId === 'brick') {
+          if (this.state === 'super') {
+            world.breakBrick(col, row);   // Super: smash it
+          } else {
+            world.bumpBlock(col, row);    // Small: bonk
+          }
+        } else if (tileId === 'qblock') {
+          world.bumpBlock(col, row);      // ? block: bump (contents wired in Phase 4b)
+        }
+        // hard / ground / pipe: no reaction
+      }
 
       // World left boundary
       if (this.x < 0) { this.x = 0; this.vx = 0; }

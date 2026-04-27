@@ -53,9 +53,9 @@ If the user asks for something that crosses the line, push back politely and off
 |---|---|---|
 | Small | 16×16 | Walk, run, jump. 1 hit = die. |
 | Super | 16×32 | Above + break bricks from below + 1 extra hit before reverting to Small. |
-| Caped | 16×32 | Above + spin attack (B in air or while not running). |
+| Tailed | 16×32 | Above + spin attack (B in air or while not running). |
 
-(Naming note: "Caped" is our equivalent of the SMB3 raccoon form. Visual: small cape, no animal ears or tail. No flight / P-meter — that system was cut to keep scope manageable.)
+(Naming note: "Tailed" is our equivalent of the SMB3 raccoon form. Visual: original ears + tail design, distinct from Nintendo's specific raccoon suit. No flight / P-meter — deferred to post-Phase-8.)
 
 ### Physics constants (tuned — these are the live values, do not revert)
 
@@ -105,13 +105,13 @@ Editor palette items. All snap to the 16×16 grid.
 - **Ground** (textured top + filler row beneath)
 - **Hard block** (gray, indestructible — for stairs)
 - **Brick** (orange brick, breakable when Super hits from below)
-- **? Block** (yellow with bouncing ?, contents set in editor: coin / mushroom / cape)
+- **? Block** (yellow with bouncing ?, contents set in editor: coin / mushroom / tail)
 - **Used block** (gray flat, what brick/? becomes after empty)
 - **Coin** (collectible)
 - **Pipe top** (32×16) and **pipe shaft** (32×16) — decorative in v1
 - **Goal post** (end-of-level)
 - **Powerup: Mushroom** (Small → Super)
-- **Powerup: Cape** (Super → Caped)
+- **Powerup: Tail** (Super → Tailed)
 - **Spawn marker** (where player starts; exactly one per level)
 - Placeable enemies: Stomper, Shellback green/red, Spikeplant, Cannonball
 
@@ -252,7 +252,7 @@ HUD has Play/Edit toggle.
 **Interactions:**
 - Tap empty cell with tile selected → place
 - Tap occupied cell → delete (regardless of palette selection)
-- Long-press a `?` block while it's the palette selection → cycle contents (coin / mushroom / cape)
+- Long-press a `?` block while it's the palette selection → cycle contents (coin / mushroom / tail)
 - Test → switch to Play mode at the spawn marker
 - Save → write to `localStorage` key `mario-tablet:level:custom`. Show JSON in a copyable textarea
 - Export JSON / Import JSON via clipboard
@@ -281,12 +281,12 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 
 - **Phase 1 — Skeleton** ✅: index.html, canvas, hardcoded test level (ground row + a few bricks). No player.
 - **Phase 2 — Player movement** ✅: Nicky sprite, walk/run/jump physics, AABB tile collision, camera follow. Keyboard only. Jump latch input fix. Level layout tuned for reachable ? blocks.
-- **Phase 3 — Touch controls**: D-pad + A/B virtual buttons. Hit targets ≥64px. `touch-action: none` on controls. Test on iPad. (`setVirtualKey()` already scaffolded in `input.js`.)
-- **Phase 4 — Enemies & power-ups**: Stomper AI, Shellback green, Mushroom (Small→Super), Cape (Super→Caped with spin attack — no flight, no P-meter).
+- **Phase 3 — Touch controls** ✅: D-pad + A/B virtual buttons. Hit targets ≥64px. `touch-action: none` on controls. Test on iPad. (`setVirtualKey()` already scaffolded in `input.js`.)
+- **Phase 4 — Environment physics**: Block interactions — bump ? blocks from below (spawn coin/mushroom/tail item), break bricks when Super, coins collectible on contact, used-block state after empty. Powerup items spawn, fall, slide, and are collected. Mushroom: Small→Super power state.
 - **Phase 5 — Edit mode**: Toggle, palette, place/delete, save/load, JSON export.
 - **Phase 6 — Graphics overhaul**: Redraw all sprites (Nicky, tiles, enemies) to NES quality. Improve tile variety, add background details (clouds, hills). This is a dedicated art pass — do not mix with gameplay changes.
 - **Phase 7 — Polish**: Coin counter, lives, win condition (goal post), death/respawn animation, game over screen.
-- **Phase 8 — Stretch**: SFX, more enemies (Spikeplant, Cannonball, Shellback red).
+- **Phase 8 — Enemies & Tail**: Stomper AI, Shellback green/red, Spikeplant, Cannonball. Tail powerup (Super→Tailed, spin attack — no flight, no P-meter). SFX.
 
 When a phase ships: tick its box in `README.md` Status, append to §16 Decisions log here, and tell the user it's ready to upload to GitHub Pages. Bump the cache-bust `?v=` number on script/style tags in `index.html`.
 
@@ -373,6 +373,9 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-26** — Phase 2 shipped. Player character renamed Nicky, colors changed to pink/purple. Physics tuned: jumpImpulse -5.5, runJumpBonus -1.5, jumpReleaseCutoff 1.5 — confirmed 4-tile standing / 6-tile running jumps. Input rewritten with keydown latch to fix 70% jump-miss bug. Level layout redesigned so all ? blocks have clear jump paths from ground. Physics rewritten as directional leading-edge AABB.
 - **2026-04-26** — Removed P-meter and flight from scope (was Phase 5). Cape powerup now gives spin attack only. Phase numbering updated. Graphics overhaul added as dedicated Phase 6 (not mixed with gameplay work).
 - **2026-04-27** — Phase 3 shipped. Touch controls wired in input.js: zone-based D-pad on #dpad container (14px deadzone, multi-touch safe), A=jump (KeyZ) / B=run (KeyX) round buttons. Portrait overlay already in main.js. Visual .pressed feedback on all buttons. Cache bust bumped to v=4.
+- **2026-04-27** — Confirmed: "Caped" powerup stays as spin-attack-only for now (no ears/tail sprite, no P-meter, no flight). P-meter + tailed form deferred to post-Phase-8. README Phase 5 "Caped & P-meter" line removed; phases renumbered to match instructions.
+- **2026-04-27** — Phase plan restructured: Phase 4 is now Environment physics (block hits, coins, mushroom powerup) so the world has meaningful interactions before enemies are introduced. Tail powerup moved to Phase 8 alongside all enemies. Old Phase 4 (enemies + powerups) split and reordered.
+- **2026-04-27** — Phase 4a shipped: brick breaking. physics.js now records hitCeiling={col,row,tileId} on upward collision. player.js reads it and calls world.breakBrick (Super) or world.bumpBlock (Small/qblock). Bricks permanently removed via setTile. 4-fragment debris particles (orange, gravity, 30-frame fade). Blocks bump up 4px via sin curve over 14 frames. Hard blocks produce no reaction. Dev: press P to toggle small/super for testing.
 
 ---
 
@@ -394,10 +397,10 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 
 - [x] Phase 1 — Skeleton
 - [x] Phase 2 — Player movement (Nicky, physics, input latch, level layout)
-- [ ] Phase 3 — Touch controls
-- [ ] Phase 4 — Enemies & power-ups
+- [x] Phase 3 — Touch controls
+- [ ] Phase 4 — Environment physics (block interactions, coins, mushroom)
 - [ ] Phase 5 — Edit mode
 - [ ] Phase 6 — Graphics overhaul
 - [ ] Phase 7 — Polish
-- [ ] Phase 8 — Stretch
+- [ ] Phase 8 — Enemies & Tail
 ```

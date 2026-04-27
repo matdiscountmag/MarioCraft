@@ -12,10 +12,10 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 ## Status
 
 - [x] Phase 1 — Skeleton
-- [x] Phase 2 — Player movement
-- [x] Phase 3 — Touch controls
-- [ ] Phase 4 — Enemies & power-ups
-- [ ] Phase 5 — Caped & P-meter
-- [ ] Phase 6 — Edit mode
-- [ ] Phase 7 — Polish
-- [ ] Phase 8 — Stretch
+- [x] Phase 2 — Player movement (Nicky, physics, input latch)
+- [x] Phase 3 — Touch controls (D-pad + A/B, portrait overlay)
+- [ ] Phase 4 — Environment physics (? blocks, brick breaking, coins, Mushroom → Super)
+- [ ] Phase 5 — Edit mode (toggle, palette, place/delete, save/load, JSON export)
+- [ ] Phase 6 — Graphics overhaul (sprite redraw, tile variety, background details)
+- [ ] Phase 7 — Polish (coin counter, lives, goal post, death/respawn, game over)
+- [ ] Phase 8 — Enemies & Tail (Stomper, Shellbacks, Spikeplant, Cannonball, Tail → Tailed spin attack, SFX)

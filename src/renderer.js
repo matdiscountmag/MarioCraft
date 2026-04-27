@@ -11,11 +11,9 @@ import {
   PALETTE,
 } from './sprites.js';
 
-// Viewport dimensions in game pixels (NES resolution)
 export const VIEWPORT_W = 256;
 export const VIEWPORT_H = 224;
 
-// Map tile ID → sprite array
 const TILE_SPRITES = {
   ground:     TILE_GROUND,
   ground_top: TILE_GROUND_TOP,
@@ -34,52 +32,47 @@ export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    // Internal resolution
-    this.canvas.width = VIEWPORT_W;
+    this.canvas.width  = VIEWPORT_W;
     this.canvas.height = VIEWPORT_H;
     this.debug = false;
   }
 
-  /** Draw everything for one frame. */
   draw(levelData, camera, entities = [], player = null, gameState = {}) {
     const { ctx } = this;
+    const { particles = [], blockBumps = [] } = gameState;
 
-    // Sky background
+    // Sky
     ctx.fillStyle = PALETTE.S;
     ctx.fillRect(0, 0, VIEWPORT_W, VIEWPORT_H);
 
-    // Draw simple cloud shapes (static decoration)
     this._drawClouds(camera.x);
+    this._drawTiles(levelData, camera, blockBumps);
+    this._drawParticles(particles, camera);
 
-    // Tiles
-    this._drawTiles(levelData, camera);
-
-    // Entities (Phase 4+)
     for (const e of entities) {
       if (e.draw) e.draw(ctx, camera);
     }
 
-    // Player (Phase 2+)
-    if (player && player.draw) {
-      player.draw(ctx, camera);
-    }
+    if (player && player.draw) player.draw(ctx, camera);
 
-    // HUD
     this._drawHUD(gameState);
 
-    // Debug grid overlay
-    if (this.debug) {
-      this._drawDebugGrid(levelData, camera);
-    }
+    if (this.debug) this._drawDebugGrid(levelData, camera);
   }
 
-  /** Draw the tile layer. Only renders tiles visible in the camera viewport. */
-  _drawTiles(levelData, camera) {
+  _drawTiles(levelData, camera, blockBumps = []) {
     const { ctx } = this;
     const startCol = Math.max(0, Math.floor(camera.x / TILE_SIZE));
     const endCol   = Math.min(LEVEL_COLS - 1, Math.ceil((camera.x + VIEWPORT_W) / TILE_SIZE));
     const startRow = Math.max(0, Math.floor(camera.y / TILE_SIZE));
     const endRow   = Math.min(LEVEL_ROWS - 1, Math.ceil((camera.y + VIEWPORT_H) / TILE_SIZE));
+
+    // Build bump-offset lookup for this frame (O(1) per tile)
+    const bumpMap = new Map();
+    for (const b of blockBumps) {
+      const offset = -Math.round(Math.sin((b.timer / b.maxTimer) * Math.PI) * 4);
+      bumpMap.set(`${b.col},${b.row}`, offset);
+    }
 
     for (let row = startRow; row <= endRow; row++) {
       for (let col = startCol; col <= endCol; col++) {
@@ -87,13 +80,13 @@ export class Renderer {
         if (!tileId) continue;
 
         const px = col * TILE_SIZE - Math.round(camera.x);
-        const py = row * TILE_SIZE - Math.round(camera.y);
+        const bumpOffset = bumpMap.get(`${col},${row}`) ?? 0;
+        const py = row * TILE_SIZE - Math.round(camera.y) + bumpOffset;
 
         const sprite = TILE_SPRITES[tileId];
         if (sprite) {
           drawSprite(ctx, sprite, px, py);
         } else if (tileId === 'spawn') {
-          // Spawn marker: small green flag icon
           ctx.fillStyle = '#00A848';
           ctx.fillRect(px + 6, py + 2, 2, 12);
           ctx.fillRect(px + 8, py + 2, 6, 6);
@@ -102,49 +95,56 @@ export class Renderer {
     }
   }
 
-  /** Simple static cloud decorations tied to world x (parallax-free). */
+  /** Draw brick debris and other particle effects. */
+  _drawParticles(particles, camera) {
+    if (!particles.length) return;
+    const { ctx } = this;
+    for (const p of particles) {
+      const sx = Math.round(p.x - camera.x);
+      const sy = Math.round(p.y - camera.y);
+      if (sx < -4 || sx > VIEWPORT_W + 4 || sy < -4 || sy > VIEWPORT_H + 4) continue;
+      // Fade out during the last third of lifetime
+      const fade = p.life / p.maxLife;
+      ctx.globalAlpha = fade < 0.33 ? fade * 3 : 1;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(sx - 1, sy - 1, 3, 3);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   _drawClouds(camX) {
     const { ctx } = this;
-    // Cloud positions in world pixels (x, y, scale)
     const clouds = [
-      { wx: 64, wy: 20, w: 32, h: 16 },
-      { wx: 200, wy: 16, w: 48, h: 16 },
-      { wx: 360, wy: 24, w: 32, h: 12 },
-      { wx: 550, wy: 18, w: 48, h: 16 },
-      { wx: 720, wy: 22, w: 32, h: 12 },
-      { wx: 900, wy: 16, w: 48, h: 16 },
+      { wx: 64,   wy: 20, w: 32, h: 16 },
+      { wx: 200,  wy: 16, w: 48, h: 16 },
+      { wx: 360,  wy: 24, w: 32, h: 12 },
+      { wx: 550,  wy: 18, w: 48, h: 16 },
+      { wx: 720,  wy: 22, w: 32, h: 12 },
+      { wx: 900,  wy: 16, w: 48, h: 16 },
       { wx: 1100, wy: 20, w: 32, h: 16 },
       { wx: 1300, wy: 18, w: 48, h: 16 },
     ];
-
     ctx.fillStyle = PALETTE.W;
     for (const c of clouds) {
       const sx = c.wx - camX;
       if (sx + c.w < 0 || sx > VIEWPORT_W) continue;
-      // Puffy cloud shape: 3 overlapping ellipses
       this._fillCloud(sx, c.wy, c.w, c.h);
     }
   }
 
   _fillCloud(x, y, w, h) {
     const { ctx } = this;
-    // Draw as simple pixel rects to keep the NES aesthetic
-    const bw = Math.floor(w * 0.4);
     const bh = Math.floor(h * 0.5);
-    ctx.fillRect(x + Math.floor(w * 0.1), y + bh, Math.floor(w * 0.8), bh); // base
-    ctx.fillRect(x + Math.floor(w * 0.2), y,       Math.floor(w * 0.6), h);  // middle puff
-    ctx.fillRect(x,                        y + bh,  Math.floor(w * 0.3), bh); // left puff
-    ctx.fillRect(x + Math.floor(w * 0.7),  y + bh,  Math.floor(w * 0.3), bh); // right puff
+    ctx.fillRect(x + Math.floor(w * 0.1), y + bh, Math.floor(w * 0.8), bh);
+    ctx.fillRect(x + Math.floor(w * 0.2), y,       Math.floor(w * 0.6), h);
+    ctx.fillRect(x,                        y + bh,  Math.floor(w * 0.3), bh);
+    ctx.fillRect(x + Math.floor(w * 0.7),  y + bh,  Math.floor(w * 0.3), bh);
   }
 
-  /** Minimal HUD: score placeholder. */
   _drawHUD(gameState) {
-    const { ctx } = this;
-    // Use nearest-neighbor pixel font via fillRect or just skip text for now
-    // Phase 7 adds proper coin counter / lives. For now: nothing.
+    // Phase 7 adds coin counter / lives.
   }
 
-  /** Debug: faint grid + tile IDs. */
   _drawDebugGrid(levelData, camera) {
     const { ctx } = this;
     ctx.strokeStyle = 'rgba(255,255,255,0.25)';
@@ -166,15 +166,10 @@ export class Renderer {
   }
 }
 
-/** Camera state. Follows player with dead-zone. */
 export function createCamera() {
   return { x: 0, y: 0 };
 }
 
-/**
- * Update camera to follow a target point (e.g. player center).
- * Dead-zone: 32px horizontal band. Y fixed (single-height level).
- */
 export function updateCamera(camera, targetX, levelPixelWidth) {
   const DEAD_ZONE = 32;
   const targetCamX = targetX - VIEWPORT_W / 2;
@@ -183,6 +178,5 @@ export function updateCamera(camera, targetX, levelPixelWidth) {
     camera.x += diff - Math.sign(diff) * DEAD_ZONE / 2;
   }
   camera.x = Math.max(0, Math.min(levelPixelWidth - VIEWPORT_W, camera.x));
-  // Y stays 0 for a single-row level
   camera.y = 0;
 }

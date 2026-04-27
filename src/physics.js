@@ -7,15 +7,15 @@ import { TILE_SIZE, getTile, isSolid } from './level.js';
  * Move entity by vx/vy and resolve tile collisions.
  * Entity needs: x, y, vx, vy, w (width px), h (height px).
  * Sets entity.onGround = true when landing on a tile top.
+ * Sets entity.hitCeiling = { col, row, tileId } when head hits a solid from below.
  */
 export function resolveEntity(entity, levelData) {
   entity.onGround = false;
+  entity.hitCeiling = null;
 
-  // ── X axis ───────────────────────────────────────────────────────────────
   entity.x += entity.vx;
 
   if (entity.vx > 0) {
-    // Leading edge: right side
     const col = Math.floor((entity.x + entity.w - 1) / TILE_SIZE);
     const rowTop    = Math.floor(entity.y / TILE_SIZE);
     const rowBottom = Math.floor((entity.y + entity.h - 1) / TILE_SIZE);
@@ -27,7 +27,6 @@ export function resolveEntity(entity, levelData) {
       }
     }
   } else if (entity.vx < 0) {
-    // Leading edge: left side
     const col = Math.floor(entity.x / TILE_SIZE);
     const rowTop    = Math.floor(entity.y / TILE_SIZE);
     const rowBottom = Math.floor((entity.y + entity.h - 1) / TILE_SIZE);
@@ -40,11 +39,9 @@ export function resolveEntity(entity, levelData) {
     }
   }
 
-  // ── Y axis ───────────────────────────────────────────────────────────────
   entity.y += entity.vy;
 
   if (entity.vy > 0) {
-    // Leading edge: bottom (falling)
     const row = Math.floor((entity.y + entity.h - 1) / TILE_SIZE);
     const colLeft  = Math.floor(entity.x / TILE_SIZE);
     const colRight = Math.floor((entity.x + entity.w - 1) / TILE_SIZE);
@@ -57,14 +54,15 @@ export function resolveEntity(entity, levelData) {
       }
     }
   } else if (entity.vy < 0) {
-    // Leading edge: top (jumping up)
     const row = Math.floor(entity.y / TILE_SIZE);
     const colLeft  = Math.floor(entity.x / TILE_SIZE);
     const colRight = Math.floor((entity.x + entity.w - 1) / TILE_SIZE);
     for (let col = colLeft; col <= colRight; col++) {
-      if (isSolid(getTile(levelData, col, row))) {
+      const tileId = getTile(levelData, col, row);
+      if (isSolid(tileId)) {
         entity.y = (row + 1) * TILE_SIZE;
         entity.vy = 0;
+        entity.hitCeiling = { col, row, tileId };
         break;
       }
     }

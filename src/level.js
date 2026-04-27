@@ -123,7 +123,17 @@ export function isSolid(tileId) {
     || tileId === 'pipe_sl' || tileId === 'pipe_sr';
 }
 
+/** True only for tiles a Super player can break from below. */
+export function isBreakable(tileId) {
+  return tileId === 'brick';
+}
+
 export function getTile(levelData, col, row) {
   if (row < 0 || row >= levelData.height || col < 0 || col >= levelData.width) return null;
   return levelData.tiles[row][col];
+}
+
+export function setTile(levelData, col, row, tileId) {
+  if (row < 0 || row >= levelData.height || col < 0 || col >= levelData.width) return;
+  levelData.tiles[row][col] = tileId;
 }
