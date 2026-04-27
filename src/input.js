@@ -1,5 +1,8 @@
-// input.js — Keyboard + touch input → unified input state.
-// Provides a simple poll() + state object consumed by player.js.
+// input.js — Keyboard + touch → unified input state.
+//
+// jumpPressed uses a LATCH set by the keydown event directly,
+// not computed by frame comparison. This captures fast taps that
+// start and finish between two poll() calls (sub-16ms presses).
 
 export function createInput() {
   const state = {
@@ -7,21 +10,27 @@ export function createInput() {
     right: false,
     up:    false,
     down:  false,
-    jump:  false,   // A button / Z key
-    run:   false,   // B button / X key
-    // Rising-edge flags (true for exactly one frame)
-    jumpPressed: false,
+    jump:  false,
+    run:   false,
+    jumpPressed: false, // rising edge latch — true for exactly one poll() cycle
     runPressed:  false,
   };
 
-  const _prev = { jump: false, run: false };
   const _keys = {};
+  let _jumpLatch = false;
+  let _runLatch  = false;
 
-  // Key down/up listeners
-  window.addEventListener('keydown', e => { _keys[e.code] = true; });
-  window.addEventListener('keyup',   e => { _keys[e.code] = false; });
+  window.addEventListener('keydown', e => {
+    if (_keys[e.code]) return; // ignore key-repeat
+    _keys[e.code] = true;
+    if (e.code === 'KeyZ' || e.code === 'Space')                              _jumpLatch = true;
+    if (e.code === 'KeyX' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') _runLatch = true;
+  });
 
-  /** Called once per frame before update logic. Refreshes state from raw inputs. */
+  window.addEventListener('keyup', e => {
+    _keys[e.code] = false;
+  });
+
   function poll() {
     state.left  = !!(_keys['ArrowLeft']  || _keys['KeyA']);
     state.right = !!(_keys['ArrowRight'] || _keys['KeyD']);
@@ -30,17 +39,22 @@ export function createInput() {
     state.jump  = !!(_keys['KeyZ'] || _keys['Space']);
     state.run   = !!(_keys['KeyX'] || _keys['ShiftLeft'] || _keys['ShiftRight']);
 
-    // Rising-edge detection
-    state.jumpPressed = state.jump && !_prev.jump;
-    state.runPressed  = state.run  && !_prev.run;
-
-    _prev.jump = state.jump;
-    _prev.run  = state.run;
+    // Transfer latches — true for one poll cycle, then cleared
+    state.jumpPressed = _jumpLatch;
+    state.runPressed  = _runLatch;
+    _jumpLatch = false;
+    _runLatch  = false;
   }
 
-  /** Called by touch control overlay (Phase 3) to set a virtual key. */
-  function setVirtualKey(key, value) {
-    _keys[key] = value;
+  // Called by touch overlay (Phase 3) to inject virtual key events
+  function setVirtualKey(code, value) {
+    if (value && !_keys[code]) {
+      _keys[code] = true;
+      if (code === 'KeyZ')  _jumpLatch = true;
+      if (code === 'KeyX')  _runLatch  = true;
+    } else if (!value) {
+      _keys[code] = false;
+    }
   }
 
   return { state, poll, setVirtualKey };
