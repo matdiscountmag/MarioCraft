@@ -13,6 +13,7 @@ export const PALETTE = {
   Z: '#FCB89C',              // skin
   H: '#883800',              // hair / shoes
   E: '#B85820', e: '#FCB89C', // enemy brown
+  R: '#D03010', r: '#881800', // mushroom red / dark red
   U: '#808080', u: '#505050', // used/hard block
   K: '#000000',              // black
   W: '#F8F8F8',              // white
@@ -80,22 +81,22 @@ export const TILE_HARD = [
 ];
 
 export const TILE_BRICK = [
-  'BBBBBBBBBBBBBBBB',
-  'BbbbbbbbBbbbbbbb',
-  'BbBBBBBBBbBBBBBB',
-  'BbBBBBBBBbBBBBBB',
-  'BbBBBBBBBbBBBBBB',
-  'BbBBBBBBBbBBBBBB',
-  'BbBBBBBBBbBBBBBB',
-  'bbbbbbbbbbbbbbbb',
-  'bBBBBBBBBBBBBBBb',
-  'bBbbbbbbBBbbbbBb',
-  'bBBBBBBBBBBBBBBb',
-  'bBBBBBBBBBBBBBBb',
-  'bBBBBBBBBBBBBBBb',
-  'bBBBBBBBBBBBBBBb',
-  'bBBBBBBBBBBBBBBb',
-  'bbbbbbbbbbbbbbbb',
+  'KKKKKKKKKKKKKKKK',  // top mortar
+  'KBBBBBBBKBBBBBBb',  // upper bricks: mortar at col 0 and 8
+  'KBBBBBBBKBBBBBBb',
+  'KBBBBBBBKBBBBBBb',
+  'KBBBBBBBKBBBBBBb',
+  'KbbbbbbbKbbbbbbb',  // lower shadow of upper bricks
+  'KbbbbbbbKbbbbbbb',
+  'KKKKKKKKKKKKKKKK',  // middle mortar
+  'BBBBKBBBBBBBKBBb',  // lower bricks: mortar at col 4 and 12 (offset)
+  'BBBBKBBBBBBBKBBb',
+  'BBBBKBBBBBBBKBBb',
+  'BBBBKBBBBBBBKBBb',
+  'bbbbKbbbbbbbKbbb',  // lower shadow of lower bricks
+  'bbbbKbbbbbbbKbbb',
+  'bbbbKbbbbbbbKbbb',
+  'KKKKKKKKKKKKKKKK',  // bottom mortar
 ];
 
 // ? Block: from QuestionBlock.csv design
@@ -119,20 +120,20 @@ export const TILE_QBLOCK = [
 ];
 
 export const TILE_USED = [
-  'UUUUUUUUUUUUUUUU',
-  'UuuuuuuuuuuuuuuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
-  'UuUUUUUUUUUUUUuU',
+  'UUUUUUUUUUUUUUUU',  // outer border
+  'UWWWWWWWWWWWWWuU',  // top-left highlight, bottom-right shadow
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWuuuuuuuuuuuWuU',
+  'UWWWWWWWWWWWWWuU',
   'UuuuuuuuuuuuuuuU',
   'UUUUUUUUUUUUUUUU',
 ];
@@ -256,22 +257,23 @@ export function drawSprite(ctx, sprite, px, py, flipX = false) {
 
 // -- Items --
 
-// Mushroom powerup: orange cap with white spots, white stem, two-bump feet.
+// Mushroom powerup: red domed cap with white spots, white stem, two feet.
+// R=#D03010 red, r=#881800 dark red, W=white, u=dark gray (stem)
 export const ITEM_MUSHROOM = [
-  '......BBBB......',
-  '....BBBbbBBB....',
-  '...BbbBbbBBbB...',
-  '..BWWbbbbbbWbB..',
-  '..BWWbbbbbbWWB..',
-  '..BBbbbbbbbbBB..',
-  '...BBBBBBBBBB...',
-  '....WWWWWWWW....',
-  '....WuuuuuuW....',
-  '....WuuuuuuW....',
-  '....WWWWWWWW....',
-  '...WWuu..uuWW...',
-  '...WWuu..uuWW...',
   '................',
+  '......RRRR......',  // cap peak
+  '....RRRRrRRRR...',  // cap widening, dark right edge
+  '...RRRWRRRrRRR..',  // white spot left, shading right
+  '..RRRWWRRRrrRRR.',  // wide spot, deeper shadow
+  '..RRRWWRRRrrRRR.',
+  '..RRRRRRRRRrRRR.',  // cap base
+  '...rrrrrrrrrrrR.',  // under-cap shadow
+  '....WWWWWWWW....',  // stem top
+  '....WuuuuuuW....',  // stem
+  '....WuuuuuuW....',
+  '....WuuuuuuW....',  // stem bottom
+  '...WWuuuuuuWW...',  // feet spreading
+  '...WuuuuuuuuW...',  // feet base
   '................',
   '................',
 ];
