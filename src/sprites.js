@@ -120,22 +120,22 @@ export const TILE_QBLOCK = [
 ];
 
 export const TILE_USED = [
-  'UUUUUUUUUUUUUUUU',  // outer border
-  'UWWWWWWWWWWWWWuU',  // top-left highlight, bottom-right shadow
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWuuuuuuuuuuuWuU',
-  'UWWWWWWWWWWWWWuU',
-  'UuuuuuuuuuuuuuuU',
-  'UUUUUUUUUUUUUUUU',
+  'KKKKKKKKKKKKKKKK',  // black border — same family as ? block
+  'KUUUUUUUUUUUUUuK',  // gray highlight ring (top-left)
+  'KUuuuuuuuuuuuuuK',  // dark gray interior
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUuuuuuuuuuuuuuK',
+  'KUUUUUUUUUUUUUuK',  // gray highlight ring (bottom)
+  'KuuuuuuuuuuuuuuK',
+  'KKKKKKKKKKKKKKKK',
 ];
 
 export const TILE_COIN = [
