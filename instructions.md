@@ -146,9 +146,11 @@ Black:             #000000
 White:             #F8F8F8
 Stomper brown:     #B85820
 Stomper light:     #FCB89C
+Mushroom red:      #D03010    # R in sprite palettes
+Mushroom red dk:   #881800    # r in sprite palettes
 ```
 
-Nicky's color scheme: pink cap + highlights (N=#F878B8), dark pink shading (n=#A02060), purple outfit (V=#7840C8), skin (Z=#FCB89C), dark brown shoes (H=#883800). These are already live in `sprites.js` and `player-sprites.js`.
+Nicky's color scheme: pink cap + highlights (N=#F878B8), dark pink shading (n=#A02060), purple outfit (V=#7840C8), skin (Z=#FCB89C), dark brown shoes (H=#883800). These are the intended final colors. **Current small Nicky sprites use placeholder colors** (brick-red cap/shoes B=#C84800, peach skin Z=#FCB89C, black outline K) — pending a full color pass.
 
 ---
 
@@ -213,7 +215,32 @@ Sprites are arrays of equal-length strings, 1 char = 1 game pixel. `drawSprite(c
 
 Render: iterate rows × cols, fill 1×1 rect at game-pixel coords, scale via canvas size + `imageRendering: pixelated`. Flip horizontally by reversing column order at draw time (don't store mirrored copies).
 
-**Animation**: 2–3 keyframes per cycle (`PLAYER_SMALL_WALK_1`, `_WALK_2`). Cycle based on horizontal speed. Spin attack = 4 fast frames.
+**Animation**: 2–3 keyframes per cycle (`PLAYER_SMALL_WALK1_R`, `_WALK2_R`). Cycle based on horizontal speed (`walkTimer += |vx| * dt`; flip frame when timer exceeds 12). Spin attack = 4 fast frames (not yet implemented).
+
+### CSV → sprite array workflow
+
+The user draws sprites in a spreadsheet saved as CSV (from `assets/`). Agent converts to JS string array:
+
+- CSV color key: `b` → `K` (black), `r` → `B` (brick-red), `p` → `Z` (peach), empty cell → `.`
+- Target size: 16×16. If CSV is narrower, pad with dots to center (stand) or pad right (walk with arms out).
+- **Positioning rule**: the shoe-base row must land at sprite row 15 so feet are flush with the physics box bottom. For stand poses (CSV shorter than 16 rows), add an empty row at the top. For walk poses that naturally fill 16 rows, no adjustment needed.
+- Walk frame: arms-out running pose. 1px vertical bob implemented via `sy -= this.walkFrame` in `player.js draw()`.
+
+### ES module cache-busting
+
+Bumping `?v=N` on `<script src="main.js?v=N">` in `index.html` only forces `main.js` to re-fetch. Sub-modules imported inside JS files are cached separately by the browser's module map and will **not** update unless their import URL also changes.
+
+**Rule**: whenever `player-sprites.js` (or any other sub-module) changes, bump the version string in **both** `index.html` AND the `import` statement(s) that reference that file:
+
+```js
+// in main.js — bump when player.js changes
+import { createPlayer } from './entities/player.js?v=18';
+
+// in player.js — bump when player-sprites.js changes
+import { PLAYER_SMALL_STAND_R, ... } from '../player-sprites.js?v=18';
+```
+
+Keep all version numbers in sync.
 
 ---
 
@@ -397,6 +424,7 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-27** — Phase 4a shipped: brick breaking. physics.js now records hitCeiling={col,row,tileId} on upward collision. player.js reads it and calls world.breakBrick (Super) or world.bumpBlock (Small/qblock). Bricks permanently removed via setTile. 4-fragment debris particles (orange, gravity, 30-frame fade). Blocks bump up 4px via sin curve over 14 frames. Hard blocks produce no reaction. Dev: press P to toggle small/super for testing.
 - **2026-04-27** — Repo reorganized into prod/ (GitHub Pages), backup/ (pre-phase snapshots), and assets/ (working files). §7 updated to reflect new structure. Backup-before-phase policy added.
 - **2026-04-27** — Phase 5 shipped: Edit mode. LEVEL_ROWS expanded 14→48 (ground rows 46–47, sky ceiling row 2, build space rows 2–45). Vertical camera scroll added (32px dead-zone, clamped). editor.js: right-side 32px palette strip with 8 slots (erase, ground_top, ground, hard, brick, qblock, coin, pipe), drag-to-pan with 5px threshold, auto-save on every change, compound pipe placement (2×2) + smart erasure, sky limit dashed line, grid overlay. ? block contents random at runtime (70% coin, 30% mushroom). Entity placement and spawn marker deferred to Phase 8. Reset (clears localStorage) and Export (downloads level.json) added to HUD.
+- **2026-04-27** — Phase 6 in progress. Completed: background decorations (clouds/hills/bushes) world-positioned at wy≈562–736 so they're visible during play (camera.y≈544); draw order sky→hills→bushes→clouds→tiles. Ground tile improved with dark green shadow + tan separator row. Brick tile redesigned with black mortar grid (upper/lower offset bricks). Used block redesigned with black border (matching ? block family) + gray interior. Mushroom sprite added (new R/r palette entries). Small Nicky standing sprite replaced with pixel-perfect CSV-derived art (K/B/Z placeholder colors; intended pink/purple pending color pass). Walk frame added (arms-out pose from CSV, 1px bob). Bug fixed: canvas `arc(..., Math.PI, 0, true)` draws bottom half (downward), not top — all background arcs changed to `false`. ES module cache-busting rule established: bump version in import statements too, not just index.html. Cache bust at v=18.
 
 ---
 
