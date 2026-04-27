@@ -1,25 +1,26 @@
 // player-sprites.js — Nicky sprite frames.
-// N=pink, n=dark pink, V=purple, Z=skin, H=dark brown, K=black, .=transparent
+// K=black, B=brick-red (#C84800), Z=peach-skin (#FCB89C), .=transparent
 // All sprites face RIGHT. Pass flipX=true to drawSprite for left-facing.
 
-// Standing idle
+// Standing idle — from SmallMario.csv
+// CSV color key: b→K (black), r→B (brick-red), p→Z (peach), empty→.
 export const PLAYER_SMALL_STAND_R = [
-  '................',
-  '.....NNNNN......',
-  '....NNNNNNNn....',
-  '....ZZZZZZZ.....',
-  '....ZKZZZZn.....',
-  '....ZZZZZZZ.....',
-  '.....VVVVVV.....',
-  '....VVVVVVVV....',
-  '....VVnnnnVV....',
-  '....VVnnnnVV....',
-  '.....VVnnVV.....',
-  '.....VV..VV.....',
-  '.....HHH.HHH....',
-  '................',
-  '................',
-  '................',
+  '.....KKKKKK.....',  // cap peak
+  '....KBBBBBBKK...',  // cap
+  '...KBBBBBBBBBK..',  // cap wide
+  '...KKKZZKZKKK...',  // face top
+  '..KZZKKZKZZZZK..',  // face (eyes/nose)
+  '..KZZKKZZKZZZK..',  // face
+  '...KKZZZKKKKK...',  // chin/collar
+  '....KKZZZZZK....',  // collar
+  '...KBBKKBBK.....',  // shirt top
+  '..KBBBBKKBBK....',  // shirt
+  '..KBBBBKKKKK....',  // shirt bottom
+  '...KZZZKKZKK....',  // overalls/legs
+  '...KZZBBKKKK....',  // shoes top
+  '....KBBBBK......',  // shoes
+  '....KKKKKK......',  // shoe base
+  '................',  // empty row
 ];
 
 // Walk frame 1 — left leg back, right foot forward
