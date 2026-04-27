@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>MarioCraft</title>
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+
+<div id="game-wrapper">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD bar -->
+  <div id="hud">
+    <button id="btn-mode">✎ Edit</button>
+  </div>
+
+  <!-- Touch controls (Phase 3 will wire these up) -->
+  <div id="controls">
+    <!-- D-pad -->
+    <div id="dpad">
+      <div id="btn-up"    class="dpad-btn"></div>
+      <div id="btn-left"  class="dpad-btn"></div>
+      <div id="dpad-center"></div>
+      <div id="btn-right" class="dpad-btn"></div>
+      <div id="btn-down"  class="dpad-btn"></div>
+    </div>
+
+    <!-- Action buttons -->
+    <div id="action-buttons">
+      <div id="btn-b" class="action-btn">B</div>
+      <div id="btn-a" class="action-btn">A</div>
+    </div>
+  </div>
+</div>
+
+<!-- Portrait rotation prompt -->
+<div id="rotate-overlay">
+  <div class="icon">📱</div>
+  <div>Rotate to landscape to play</div>
+</div>
+
+<script type="module" src="src/main.js?v=1"></script>
+</body>
+</html>

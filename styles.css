@@ -1,0 +1,210 @@
+/* styles.css — Page chrome + canvas scaling for NES tablet platformer. */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: monospace;
+}
+
+/* ── Canvas wrapper ─────────────────────────────────────────────────── */
+
+#game-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+#game-canvas {
+  /* Internal resolution is 256×224 set in JS.
+     Scale up to fill the screen while preserving aspect ratio. */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* Firefox */
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-width: calc(100vh * (256 / 224));  /* letterbox: never exceed aspect ratio */
+  max-height: calc(100vw * (224 / 256));
+  display: block;
+}
+
+/* ── HUD bar (Play/Edit toggle) ─────────────────────────────────────── */
+
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 10;
+  pointer-events: none;
+}
+
+#hud button {
+  pointer-events: all;
+  background: #222;
+  color: #f8f8f8;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-family: monospace;
+  font-size: 13px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#hud button:active {
+  background: #444;
+}
+
+/* ── Touch control overlay (Phase 3) ────────────────────────────────── */
+
+#controls {
+  position: absolute;
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: 0;
+  right: 0;
+  height: 160px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 16px 12px;
+  pointer-events: none;  /* children opt in */
+  z-index: 10;
+}
+
+/* D-pad */
+#dpad {
+  pointer-events: all;
+  position: relative;
+  width: 132px;
+  height: 132px;
+  touch-action: none;
+}
+
+.dpad-btn {
+  position: absolute;
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.dpad-btn:active,
+.dpad-btn.pressed {
+  background: rgba(255,255,255,0.35);
+}
+
+#btn-left  { width: 44px; height: 44px; left: 0;   top: 44px; }
+#btn-right { width: 44px; height: 44px; left: 88px; top: 44px; }
+#btn-up    { width: 44px; height: 44px; left: 44px; top: 0;    }
+#btn-down  { width: 44px; height: 44px; left: 44px; top: 88px; }
+#dpad-center {
+  position: absolute;
+  width: 44px; height: 44px;
+  left: 44px; top: 44px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+}
+
+/* Arrow icons on d-pad */
+#btn-left::after  { content: '◀'; }
+#btn-right::after { content: '▶'; }
+#btn-up::after    { content: '▲'; }
+#btn-down::after  { content: '▼'; }
+.dpad-btn::after {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.7);
+  font-size: 18px;
+}
+
+/* A / B action buttons */
+#action-buttons {
+  pointer-events: all;
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.action-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+.action-btn:active,
+.action-btn.pressed {
+  filter: brightness(1.4);
+}
+
+#btn-a {
+  background: rgba(200, 72, 0, 0.7);
+}
+
+#btn-b {
+  background: rgba(0, 100, 0, 0.7);
+  width: 56px;
+  height: 56px;
+  margin-bottom: 8px;
+}
+
+/* ── Rotate-to-landscape overlay ─────────────────────────────────────── */
+
+#rotate-overlay {
+  display: none; /* shown via JS when portrait */
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #f8f8f8;
+  font-family: monospace;
+  font-size: 18px;
+  text-align: center;
+  gap: 16px;
+}
+
+#rotate-overlay .icon {
+  font-size: 48px;
+  transform: rotate(90deg);
+}
