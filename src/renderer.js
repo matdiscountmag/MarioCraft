@@ -26,15 +26,41 @@ const TILE_SPRITES = {
   pipe_sr:    TILE_PIPE_SR,
 };
 
+// World-space positions. Ground is at world y=736. Camera.y during normal play ≈ 544.
+// At camera.y=544: clouds appear at screen y ≈ 18–34, hills/bushes near screen y ≈ 150–192.
+
 const CLOUDS = [
-  { wx: 64,   wy: 24, w: 32, h: 16 },
-  { wx: 200,  wy: 16, w: 48, h: 16 },
-  { wx: 360,  wy: 28, w: 32, h: 12 },
-  { wx: 550,  wy: 20, w: 48, h: 16 },
-  { wx: 720,  wy: 26, w: 32, h: 12 },
-  { wx: 900,  wy: 18, w: 48, h: 16 },
-  { wx: 1100, wy: 24, w: 32, h: 16 },
-  { wx: 1300, wy: 20, w: 48, h: 16 },
+  { wx: 40,   wy: 574, large: false },
+  { wx: 190,  wy: 563, large: true  },
+  { wx: 380,  wy: 578, large: false },
+  { wx: 510,  wy: 565, large: true  },
+  { wx: 700,  wy: 574, large: false },
+  { wx: 870,  wy: 562, large: true  },
+  { wx: 1060, wy: 577, large: false },
+  { wx: 1230, wy: 564, large: true  },
+  { wx: 1400, wy: 576, large: false },
+];
+
+// Hills: dome upward from ground level (wy=736). r = dome radius in px.
+const HILLS = [
+  { wx: -10,  wy: 736, r: 48 },
+  { wx: 180,  wy: 736, r: 40 },
+  { wx: 390,  wy: 736, r: 56 },
+  { wx: 630,  wy: 736, r: 40 },
+  { wx: 830,  wy: 736, r: 52 },
+  { wx: 1070, wy: 736, r: 40 },
+  { wx: 1270, wy: 736, r: 56 },
+];
+
+// Bushes: alternate with hills along the ground.
+const BUSHES = [
+  { wx: 110,  wy: 736, large: false },
+  { wx: 300,  wy: 736, large: true  },
+  { wx: 530,  wy: 736, large: false },
+  { wx: 750,  wy: 736, large: true  },
+  { wx: 970,  wy: 736, large: false },
+  { wx: 1170, wy: 736, large: true  },
+  { wx: 1390, wy: 736, large: false },
 ];
 
 export class Renderer {
@@ -55,10 +81,15 @@ export class Renderer {
     const blockBumps = gameState.blockBumps || [];
     const items      = gameState.items      || [];
 
+    // Sky
     ctx.fillStyle = PALETTE.S;
     ctx.fillRect(0, 0, VIEWPORT_W, VIEWPORT_H);
 
+    // Background decorations (drawn before tiles so tiles overlap them)
+    this._drawHills(camera);
+    this._drawBushes(camera);
     this._drawClouds(camera);
+
     this._drawTiles(levelData, camera, blockBumps);
     this._drawParticles(particles, camera);
 
@@ -73,6 +104,8 @@ export class Renderer {
     this._drawHUD(gameState);
     if (this.debug) this._drawDebugGrid(levelData, camera);
   }
+
+  // ── Tiles ─────────────────────────────────────────────────────────────────
 
   _drawTiles(levelData, camera, blockBumps) {
     blockBumps = blockBumps || [];
@@ -102,6 +135,8 @@ export class Renderer {
     }
   }
 
+  // ── Particles ─────────────────────────────────────────────────────────────
+
   _drawParticles(particles, camera) {
     if (!particles.length) return;
     const ctx = this.ctx;
@@ -118,31 +153,140 @@ export class Renderer {
     ctx.globalAlpha = 1;
   }
 
+  // ── Background: clouds ────────────────────────────────────────────────────
+
   _drawClouds(camera) {
-    const ctx = this.ctx;
-    ctx.fillStyle = PALETTE.W;
     for (let i = 0; i < CLOUDS.length; i++) {
       const c  = CLOUDS[i];
-      const sx = c.wx - camera.x;
-      const sy = c.wy - camera.y;
-      if (sx + c.w < 0 || sx > VIEWPORT_W) continue;
-      if (sy + c.h < 0 || sy > VIEWPORT_H) continue;
-      this._fillCloud(sx, sy, c.w, c.h);
+      const sx = Math.round(c.wx - camera.x);
+      const sy = Math.round(c.wy - camera.y);
+      const w  = c.large ? 48 : 32;
+      const h  = c.large ? 18 : 13;
+      if (sx + w < 0 || sx > VIEWPORT_W) continue;
+      if (sy + h < 0 || sy > VIEWPORT_H) continue;
+      this._drawNESCloud(sx, sy, c.large);
     }
   }
 
-  _fillCloud(x, y, w, h) {
+  // NES-style cloud: 3 bumps (left/center/right) with black outline, white fill.
+  _drawNESCloud(sx, sy, large) {
     const ctx = this.ctx;
-    const bh = Math.floor(h * 0.5);
-    ctx.fillRect(x + Math.floor(w * 0.1), y + bh, Math.floor(w * 0.8), bh);
-    ctx.fillRect(x + Math.floor(w * 0.2), y,       Math.floor(w * 0.6), h);
-    ctx.fillRect(x,                        y + bh,  Math.floor(w * 0.3), bh);
-    ctx.fillRect(x + Math.floor(w * 0.7),  y + bh,  Math.floor(w * 0.3), bh);
+    const W = large ? 48 : 32;
+
+    // Bump centres and radii (positions relative to sx)
+    const bumps = large
+      ? [{ cx: sx + 9,  r: 7 }, { cx: sx + 24, r: 10 }, { cx: sx + 39, r: 8 }]
+      : [{ cx: sx + 6,  r: 5 }, { cx: sx + 16, r:  7 }, { cx: sx + 27, r: 6 }];
+
+    // baseY = where bumps meet the rectangular base of the cloud
+    const baseY = sy + (large ? 10 : 7);
+    const baseH = large ? 8 : 6;
+
+    // 1. Black outline: bumps (r+1) then base rect (1px wider/taller)
+    ctx.fillStyle = '#000000';
+    for (const b of bumps) {
+      ctx.beginPath();
+      ctx.arc(b.cx, baseY, b.r + 1, Math.PI, 0, true);
+      ctx.fill();
+    }
+    ctx.fillRect(sx - 1, baseY, W + 2, baseH + 1);
+
+    // 2. White fill: bumps then base rect
+    ctx.fillStyle = '#F8F8F8';
+    for (const b of bumps) {
+      ctx.beginPath();
+      ctx.arc(b.cx, baseY, b.r, Math.PI, 0, true);
+      ctx.fill();
+    }
+    ctx.fillRect(sx, baseY, W, baseH);
   }
+
+  // ── Background: hills ─────────────────────────────────────────────────────
+
+  _drawHills(camera) {
+    for (let i = 0; i < HILLS.length; i++) {
+      const h  = HILLS[i];
+      const sx = Math.round(h.wx - camera.x);
+      const sy = Math.round(h.wy - camera.y);
+      if (sx + h.r * 2 < 0 || sx - 1 > VIEWPORT_W) continue;
+      if (sy < 0 || sy - h.r > VIEWPORT_H)          continue;
+      this._drawNESHill(sx, sy, h.r);
+    }
+  }
+
+  // Dome shape: dark green 1px outline, bright green fill.
+  // sx/sy = top-left of bounding box (hill base at sy, peak at sy-r).
+  _drawNESHill(sx, sy, r) {
+    const ctx = this.ctx;
+    // Outline (1px larger radius)
+    ctx.fillStyle = '#006800';
+    ctx.beginPath();
+    ctx.arc(sx + r, sy, r + 1, Math.PI, 0, true);
+    ctx.fill();
+    // Main fill
+    ctx.fillStyle = '#50A800';
+    ctx.beginPath();
+    ctx.arc(sx + r, sy, r, Math.PI, 0, true);
+    ctx.fill();
+  }
+
+  // ── Background: bushes ────────────────────────────────────────────────────
+
+  _drawBushes(camera) {
+    for (let i = 0; i < BUSHES.length; i++) {
+      const b  = BUSHES[i];
+      const sx = Math.round(b.wx - camera.x);
+      const sy = Math.round(b.wy - camera.y);
+      const w  = b.large ? 36 : 24;
+      if (sx + w < 0 || sx > VIEWPORT_W) continue;
+      if (sy < -12  || sy > VIEWPORT_H)  continue;
+      this._drawNESBush(sx, sy, b.large);
+    }
+  }
+
+  // Bush: same bump shape as cloud but green, sits on top of the ground.
+  _drawNESBush(sx, sy, large) {
+    const ctx = this.ctx;
+    const W = large ? 36 : 24;
+    const bumps = large
+      ? [{ cx: sx + 7,  r: 6 }, { cx: sx + 18, r: 8 }, { cx: sx + 29, r: 7 }]
+      : [{ cx: sx + 5,  r: 4 }, { cx: sx + 12, r: 6 }, { cx: sx + 20, r: 5 }];
+    const baseH = large ? 7 : 5;
+
+    // Dark outline
+    ctx.fillStyle = '#006800';
+    for (const b of bumps) {
+      ctx.beginPath();
+      ctx.arc(b.cx, sy, b.r + 1, Math.PI, 0, true);
+      ctx.fill();
+    }
+    ctx.fillRect(sx - 1, sy, W + 2, baseH + 1);
+
+    // Main green fill
+    ctx.fillStyle = '#50A800';
+    for (const b of bumps) {
+      ctx.beginPath();
+      ctx.arc(b.cx, sy, b.r, Math.PI, 0, true);
+      ctx.fill();
+    }
+    ctx.fillRect(sx, sy, W, baseH);
+
+    // Lighter highlight arc on each bump
+    ctx.fillStyle = '#80D010';
+    for (const b of bumps) {
+      ctx.beginPath();
+      ctx.arc(b.cx - 1, sy - 1, Math.max(1, b.r - 2), Math.PI * 1.1, Math.PI * 1.9, true);
+      ctx.fill();
+    }
+  }
+
+  // ── HUD ───────────────────────────────────────────────────────────────────
 
   _drawHUD(gameState) {
     // Phase 7 adds coin counter / lives display.
   }
+
+  // ── Debug grid ────────────────────────────────────────────────────────────
 
   _drawDebugGrid(levelData, camera) {
     const ctx = this.ctx;

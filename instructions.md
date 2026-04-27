@@ -154,32 +154,43 @@ Nicky's color scheme: pink cap + highlights (N=#F878B8), dark pink shading (n=#A
 
 ## 7. Project file structure
 
+The repo root (`MarioCraft/`) has three folders. Only `prod/` is uploaded to GitHub Pages.
+
 ```
-mario-tablet/
-├── instructions.md         # this file
-├── README.md               # quick-start + status
-├── index.html              # entry point
-├── styles.css              # page chrome + control overlay
-├── src/
-│   ├── main.js             # bootstrap + game loop
-│   ├── input.js            # touch + keyboard → input state
-│   ├── physics.js          # AABB collision against tiles
-│   ├── renderer.js         # canvas draw, camera, debug overlay
-│   ├── sprites.js          # bitmap sprite definitions
-│   ├── level.js            # tile grid, save/load
-│   ├── editor.js           # edit mode, palette
-│   ├── audio.js            # SFX (later)
-│   └── entities/
-│       ├── player.js
-│       ├── stomper.js
-│       ├── shellback.js
-│       ├── spikeplant.js
-│       └── cannonball.js
-└── levels/
-    └── default.json        # built-in level
+MarioCraft/                 # repo root (local only)
+├── prod/                   # ← what gets uploaded to GitHub Pages
+│   ├── instructions.md     # this file
+│   ├── README.md           # quick-start + status
+│   ├── index.html          # entry point
+│   ├── styles.css          # page chrome + control overlay
+│   ├── src/
+│   │   ├── main.js         # bootstrap + game loop
+│   │   ├── input.js        # touch + keyboard → input state
+│   │   ├── physics.js      # AABB collision against tiles
+│   │   ├── renderer.js     # canvas draw, camera, debug overlay
+│   │   ├── sprites.js      # bitmap sprite definitions
+│   │   ├── player-sprites.js
+│   │   ├── level.js        # tile grid, save/load
+│   │   ├── editor.js       # edit mode, palette
+│   │   ├── items.js        # powerups, coins
+│   │   ├── audio.js        # SFX (later)
+│   │   └── entities/
+│   │       ├── player.js
+│   │       ├── stomper.js
+│   │       ├── shellback.js
+│   │       ├── spikeplant.js
+│   │       └── cannonball.js
+│   └── levels/
+│       └── default.json    # built-in level
+├── backup/                 # snapshot before a major phase — do not upload
+└── assets/                 # working files (CSVs, reference art, etc.) — do not upload
 ```
 
 `index.html` loads `src/main.js` as `<script type="module">`. All asset paths are **relative** (`src/main.js` not `/src/main.js`) — Pages serves under a subdirectory.
+
+### Backup policy
+
+Before starting any new phase, copy the current `prod/` folder into `backup/` (overwrite). This gives a clean rollback point if the phase goes sideways. The agent should remind the user to do this at the start of each phase session.
 
 ---
 
@@ -232,44 +243,50 @@ Use a fixed-timestep accumulator only if jitter is visible. Start simple.
 
 ## 10. Coordinate system
 
-- **World**: game pixels. Level = 1536 wide × 224 tall (96×14 tiles of 16). Origin top-left.
-- **Camera**: 256×224 viewport in world coords. Follows player with a 32-pixel horizontal dead-zone. Camera x clamped to `[0, levelWidth - 256]`.
+- **World**: game pixels. Level = 1536 wide × 768 tall (96×48 tiles of 16). Origin top-left.
+- **Camera**: 256×224 viewport in world coords. Follows player with a 32-pixel horizontal dead-zone and a 32-pixel vertical dead-zone. Camera x clamped to `[0, 1280]`, camera y clamped to `[0, 544]`.
 - **Canvas internal resolution**: 256×224. CSS-scaled to fit container.
 - `image-rendering: pixelated` on the canvas.
+- Ground is anchored at rows 46–47. Sky ceiling (edit mode limit) is row 2. Rows 0–45 are open build space above ground.
 
 ---
 
 ## 11. Edit mode UX
 
-HUD has Play/Edit toggle.
+HUD has Play/Edit toggle (button label flips: "Edit" in play mode, "Play" in edit mode).
 
 **Edit mode shows:**
-- Faint grid overlay
-- Bottom strip palette with tiles/entities, selected one highlighted
-- Buttons: Save, Load, Reset to default, Test, Export JSON
-- Pan camera by drag-on-canvas when no tile is selected for placement
+- Faint white grid overlay on the play area
+- **Right-side palette strip** (32px wide, 8 slots of ~28px each) — tiles selectable by tapping
+- Blue dashed sky-limit line at row 2 (cannot place tiles above this)
+- Touch control overlay hidden; edit-only HUD buttons (Reset, Export) shown
+- Drag-to-pan the viewport (5px threshold distinguishes drag from tap)
+
+**Palette items (in order):** Erase (X), Ground Top, Ground, Hard, Brick, ? Block, Coin, Pipe
 
 **Interactions:**
-- Tap empty cell with tile selected → place
-- Tap occupied cell → delete (regardless of palette selection)
-- Long-press a `?` block while it's the palette selection → cycle contents (coin / mushroom / tail)
-- Test → switch to Play mode at the spawn marker
-- Save → write to `localStorage` key `mario-tablet:level:custom`. Show JSON in a copyable textarea
-- Export JSON / Import JSON via clipboard
+- Tap palette slot → select tool
+- Tap in play area → place selected tile (or erase, or place pipe)
+- Erase tool → remove tile; if tile is part of a pipe, removes all 4 compound tiles
+- Pipe → places a 2×2 compound tile (pipe_tl/tr/sl/sr)
+- Drag on play area → pan viewport
+- Auto-save on every tile change (`localStorage` key `mario-tablet:level:custom`)
+- Reset button (HUD) → clears localStorage and reloads page (with confirm)
+- Export button (HUD) → downloads `level.json`
+
+**? block contents**: random at runtime — 70% coin pop, 30% mushroom. No in-editor picker. Entities (stompers, etc.) not yet placeable — deferred to Phase 8.
 
 **Level data shape:**
 
 ```js
 {
   width: 96,
-  height: 14,
-  spawn: { x: 2, y: 11 },
+  height: 48,
+  spawn: { x: 2, y: 45 },   // tile coords — player.js multiplies by 16
   tiles: [ /* [row][col], strings or null */ ],
   entities: [
-    { type: "stomper", x: 240, y: 176 },
-    { type: "shellback_green", x: 400, y: 176, ai: "fall_off_ledges" }
-  ],
-  qblockContents: { "12,8": "mushroom", "20,8": "coin" }
+    { type: "stomper", x: 240, y: 720 }
+  ]
 }
 ```
 
@@ -283,7 +300,7 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 - **Phase 2 — Player movement** ✅: Nicky sprite, walk/run/jump physics, AABB tile collision, camera follow. Keyboard only. Jump latch input fix. Level layout tuned for reachable ? blocks.
 - **Phase 3 — Touch controls** ✅: D-pad + A/B virtual buttons. Hit targets ≥64px. `touch-action: none` on controls. Test on iPad. (`setVirtualKey()` already scaffolded in `input.js`.)
 - **Phase 4 — Environment physics** ✅: Brick breaking (Super smashes, Small bonks), ? blocks spawn coin pop (+1 instant) or mushroom item, floating coins collectible on contact, mushroom emerges → slides → collected (Small→Super). New: src/items.js. Dev: P key toggles small/super.
-- **Phase 5 — Edit mode**: Toggle, palette, place/delete, save/load, JSON export.
+- **Phase 5 — Edit mode** ✅: Toggle, right-side palette strip, place/delete/pipe, drag-to-pan, auto-save, reset, JSON export. Level expanded to 96×48, vertical camera scroll added.
 - **Phase 6 — Graphics overhaul**: Redraw all sprites (Nicky, tiles, enemies) to NES quality. Improve tile variety, add background details (clouds, hills). This is a dedicated art pass — do not mix with gameplay changes.
 - **Phase 7 — Polish**: Coin counter, lives, win condition (goal post), death/respawn animation, game over screen.
 - **Phase 8 — Enemies & Tail**: Stomper AI, Shellback green/red, Spikeplant, Cannonball. Tail powerup (Super→Tailed, spin attack — no flight, no P-meter). SFX.
@@ -351,7 +368,8 @@ Safari caches aggressively, and the upload-and-wait loop is already slow — sta
 ## 15. Working agreements (for the agent)
 
 1. **Read this file at the start of every session.** Sessions are intentionally short — this file is what carries context.
-2. **No build tools.** Plain HTML+JS+CSS. ES modules are fine.
+2. **Back up before a new phase.** At the start of any session that begins a new phase, copy the current `prod/` folder into `backup/` (overwrite) before touching any files. Remind the user to do this if they haven't.
+3. **No build tools.** Plain HTML+JS+CSS. ES modules are fine.
 3. **No external CDN deps in core gameplay.** Audio library is the lone exception (when added) with local fallback.
 4. **Keep modules small.** Past ~300 lines usually means split.
 5. **Don't delete files unless asked.** Refactor by adding alongside.
@@ -377,6 +395,8 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-27** — Phase plan restructured: Phase 4 is now Environment physics (block hits, coins, mushroom powerup) so the world has meaningful interactions before enemies are introduced. Tail powerup moved to Phase 8 alongside all enemies. Old Phase 4 (enemies + powerups) split and reordered.
 - **2026-04-27** — Phase 4b shipped: ? block contents + mushroom powerup. Bumping a ? block converts it to 'used', spawns a coin pop (visual, instant +1 coin) or a mushroom item (physical). Mushroom emerges one tile over 22 frames, slides right, reverses on walls, collected by walking into it (Small→Super). Floating coin tiles collectible on player contact. New file: src/items.js. Mushroom sprite added to sprites.js.
 - **2026-04-27** — Phase 4a shipped: brick breaking. physics.js now records hitCeiling={col,row,tileId} on upward collision. player.js reads it and calls world.breakBrick (Super) or world.bumpBlock (Small/qblock). Bricks permanently removed via setTile. 4-fragment debris particles (orange, gravity, 30-frame fade). Blocks bump up 4px via sin curve over 14 frames. Hard blocks produce no reaction. Dev: press P to toggle small/super for testing.
+- **2026-04-27** — Repo reorganized into prod/ (GitHub Pages), backup/ (pre-phase snapshots), and assets/ (working files). §7 updated to reflect new structure. Backup-before-phase policy added.
+- **2026-04-27** — Phase 5 shipped: Edit mode. LEVEL_ROWS expanded 14→48 (ground rows 46–47, sky ceiling row 2, build space rows 2–45). Vertical camera scroll added (32px dead-zone, clamped). editor.js: right-side 32px palette strip with 8 slots (erase, ground_top, ground, hard, brick, qblock, coin, pipe), drag-to-pan with 5px threshold, auto-save on every change, compound pipe placement (2×2) + smart erasure, sky limit dashed line, grid overlay. ? block contents random at runtime (70% coin, 30% mushroom). Entity placement and spawn marker deferred to Phase 8. Reset (clears localStorage) and Export (downloads level.json) added to HUD.
 
 ---
 
@@ -400,7 +420,7 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 2 — Player movement (Nicky, physics, input latch, level layout)
 - [x] Phase 3 — Touch controls
 - [x] Phase 4 — Environment physics (brick breaking, ? blocks, coins, Mushroom → Super)
-- [ ] Phase 5 — Edit mode
+- [x] Phase 5 — Edit mode
 - [ ] Phase 6 — Graphics overhaul
 - [ ] Phase 7 — Polish
 - [ ] Phase 8 — Enemies & Tail
