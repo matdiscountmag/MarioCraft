@@ -1,15 +1,13 @@
-// main.js — Bootstrap + game loop.
+// main.js - Bootstrap + game loop.
 
 import { createInput }   from './input.js';
-import { loadLevel, createLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
+import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
 import { Renderer, createCamera, updateCamera } from './renderer.js';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
 import { createPlayer }  from './entities/player.js';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
-
-// ─── Init ─────────────────────────────────────────────────────────────────────
 
 const canvas = document.getElementById('game-canvas');
 const input  = createInput();
@@ -21,23 +19,18 @@ const level    = loadLevel();
 const editor   = createEditor(canvas, level);
 const player   = createPlayer(level.spawn.x, level.spawn.y);
 
-const entities          = [];   // Phase 8: enemies
+const entities           = [];
 const LEVEL_PIXEL_WIDTH  = LEVEL_COLS * TILE_SIZE;
 const LEVEL_PIXEL_HEIGHT = LEVEL_ROWS * TILE_SIZE;
 
-// ─── Particles, items & state ─────────────────────────────────────────────────
-
-const particles  = [];   // brick debris: { x,y,vx,vy,life,maxLife,color }
-const blockBumps = [];   // bump animations: { col,row,timer,maxTimer }
-const items      = [];   // physical items: mushrooms
-const coinPops   = [];   // visual coin-pop animations
-let   coins      = 0;    // total coins collected
-
-// ─── World callbacks ──────────────────────────────────────────────────────────
+const particles  = [];
+const blockBumps = [];
+const items      = [];
+const coinPops   = [];
+let   coins      = 0;
 
 function activateQBlock(col, row) {
   setTile(level, col, row, 'used');
-  // Random contents: 70% coin, 30% mushroom
   if (Math.random() < 0.7) {
     coinPops.push(createCoinPop(col, row));
     coins++;
@@ -58,15 +51,12 @@ const world = {
     ];
     for (const f of frags) particles.push({ ...f, life: 30, maxLife: 30 });
   },
-
   bumpBlock(col, row) {
     if (blockBumps.some(b => b.col === col && b.row === row)) return;
     blockBumps.push({ col, row, timer: 0, maxTimer: 14 });
     if (level.tiles[row]?.[col] === 'qblock') activateQBlock(col, row);
   },
 };
-
-// ─── Orientation overlay ──────────────────────────────────────────────────────
 
 const rotateOverlay = document.getElementById('rotate-overlay');
 function checkOrientation() {
@@ -76,17 +66,13 @@ function checkOrientation() {
 window.addEventListener('resize', checkOrientation);
 checkOrientation();
 
-// ─── Mode toggle ──────────────────────────────────────────────────────────────
-
 const modeBtn = document.getElementById('btn-mode');
 if (modeBtn) {
   modeBtn.addEventListener('click', () => {
     editor.toggle();
-    modeBtn.textContent = editor.active ? '▶ Play' : '✎ Edit';
+    modeBtn.textContent = editor.active ? 'Play' : 'Edit';
   });
 }
-
-// ─── Reset + Export ───────────────────────────────────────────────────────────
 
 const resetBtn = document.getElementById('btn-reset');
 if (resetBtn) {
@@ -113,15 +99,10 @@ if (exportBtn) {
   });
 }
 
-// ─── Debug + dev keys ────────────────────────────────────────────────────────
-
 window.addEventListener('keydown', e => {
   if (e.code === 'Backquote') renderer.debug = !renderer.debug;
-  // DEV: P toggles small/super — remove once mushroom pickup is wired
   if (e.code === 'KeyP') player.state = player.state === 'super' ? 'small' : 'super';
 });
-
-// ─── Game loop ────────────────────────────────────────────────────────────────
 
 let lastTime = null;
 
@@ -144,7 +125,6 @@ function loop(now) {
       LEVEL_PIXEL_HEIGHT,
     );
 
-    // Collect floating coin tiles on contact
     const c0 = Math.floor(player.x / TILE_SIZE);
     const c1 = Math.floor((player.x + player.w - 1) / TILE_SIZE);
     const r0 = Math.floor(player.y / TILE_SIZE);
@@ -155,11 +135,45 @@ function loop(now) {
       }
     }
 
-    // Update items (mushrooms) + player collision
     for (let i = items.length - 1; i >= 0; i--) {
       const item = items[i];
       item.update(dt, level);
       if (!item.alive) { items.splice(i, 1); continue; }
       if (!item.emerging && item.type === 'mushroom') {
         if (player.x < item.x + item.w && player.x + player.w > item.x &&
-   
+            player.y < item.y + item.h && player.y + player.h > item.y) {
+          if (player.state === 'small') player.state = 'super';
+          items.splice(i, 1);
+        }
+      }
+    }
+
+    for (let i = coinPops.length - 1; i >= 0; i--) {
+      coinPops[i].update(dt);
+      if (!coinPops[i].alive) coinPops.splice(i, 1);
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.vy += 0.35 * dt;
+      p.life -= dt;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    for (let i = blockBumps.length - 1; i >= 0; i--) {
+      blockBumps[i].timer += dt;
+      if (blockBumps[i].timer >= blockBumps[i].maxTimer) blockBumps.splice(i, 1);
+    }
+  }
+
+  renderer.draw(level, camera, entities, player, {
+    pMeter: player.pMeter, particles, blockBumps, coins,
+    items: [...items, ...coinPops],
+  });
+  editor.draw(renderer.ctx, camera);
+
+  requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
