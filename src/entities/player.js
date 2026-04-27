@@ -11,9 +11,9 @@ const PHYS = {
   walkAccel: 0.18, runAccel: 0.30,
   walkMaxSpeed: 1.9, runMaxSpeed: 3.2,
   groundFriction: 0.16, airFriction: 0.04,
-  jumpImpulse: -4.8, jumpHoldExtra: -0.30,
-  maxHoldFrames: 12, jumpReleaseCutoff: 0.5,
-  runJumpBonus: -1.2,
+  jumpImpulse: -5.5, jumpHoldExtra: -0.28,
+  maxHoldFrames: 12, jumpReleaseCutoff: 1.5,
+  runJumpBonus: -1.5,
   pMeterFillRate: 0.018, pMeterDrainRate: 0.012,
   invulnAfterHit: 90,
 };
