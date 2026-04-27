@@ -163,7 +163,7 @@ export class Renderer {
       const w  = c.large ? 48 : 32;
       const h  = c.large ? 18 : 13;
       if (sx + w < 0 || sx > VIEWPORT_W) continue;
-      if (sy + h < 0 || sy > VIEWPORT_H) continue;
+      if (sy - h > VIEWPORT_H || sy + h < 0) continue;
       this._drawNESCloud(sx, sy, c.large);
     }
   }
@@ -186,7 +186,7 @@ export class Renderer {
     ctx.fillStyle = '#000000';
     for (const b of bumps) {
       ctx.beginPath();
-      ctx.arc(b.cx, baseY, b.r + 1, Math.PI, 0, true);
+      ctx.arc(b.cx, baseY, b.r + 1, Math.PI, 0, false);
       ctx.fill();
     }
     ctx.fillRect(sx - 1, baseY, W + 2, baseH + 1);
@@ -195,7 +195,7 @@ export class Renderer {
     ctx.fillStyle = '#F8F8F8';
     for (const b of bumps) {
       ctx.beginPath();
-      ctx.arc(b.cx, baseY, b.r, Math.PI, 0, true);
+      ctx.arc(b.cx, baseY, b.r, Math.PI, 0, false);
       ctx.fill();
     }
     ctx.fillRect(sx, baseY, W, baseH);
@@ -209,7 +209,7 @@ export class Renderer {
       const sx = Math.round(h.wx - camera.x);
       const sy = Math.round(h.wy - camera.y);
       if (sx + h.r * 2 < 0 || sx - 1 > VIEWPORT_W) continue;
-      if (sy < 0 || sy - h.r > VIEWPORT_H)          continue;
+      if (sy < 0 || sy > VIEWPORT_H)                 continue;
       this._drawNESHill(sx, sy, h.r);
     }
   }
@@ -221,12 +221,12 @@ export class Renderer {
     // Outline (1px larger radius)
     ctx.fillStyle = '#006800';
     ctx.beginPath();
-    ctx.arc(sx + r, sy, r + 1, Math.PI, 0, true);
+    ctx.arc(sx + r, sy, r + 1, Math.PI, 0, false);
     ctx.fill();
     // Main fill
     ctx.fillStyle = '#50A800';
     ctx.beginPath();
-    ctx.arc(sx + r, sy, r, Math.PI, 0, true);
+    ctx.arc(sx + r, sy, r, Math.PI, 0, false);
     ctx.fill();
   }
 
@@ -257,7 +257,7 @@ export class Renderer {
     ctx.fillStyle = '#006800';
     for (const b of bumps) {
       ctx.beginPath();
-      ctx.arc(b.cx, sy, b.r + 1, Math.PI, 0, true);
+      ctx.arc(b.cx, sy, b.r + 1, Math.PI, 0, false);
       ctx.fill();
     }
     ctx.fillRect(sx - 1, sy, W + 2, baseH + 1);
@@ -266,7 +266,7 @@ export class Renderer {
     ctx.fillStyle = '#50A800';
     for (const b of bumps) {
       ctx.beginPath();
-      ctx.arc(b.cx, sy, b.r, Math.PI, 0, true);
+      ctx.arc(b.cx, sy, b.r, Math.PI, 0, false);
       ctx.fill();
     }
     ctx.fillRect(sx, sy, W, baseH);
