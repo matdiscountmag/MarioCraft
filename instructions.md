@@ -372,6 +372,7 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-26** — Phase 1 shipped. Canvas renders crisp on iPad.
 - **2026-04-26** — Phase 2 shipped. Player character renamed Nicky, colors changed to pink/purple. Physics tuned: jumpImpulse -5.5, runJumpBonus -1.5, jumpReleaseCutoff 1.5 — confirmed 4-tile standing / 6-tile running jumps. Input rewritten with keydown latch to fix 70% jump-miss bug. Level layout redesigned so all ? blocks have clear jump paths from ground. Physics rewritten as directional leading-edge AABB.
 - **2026-04-26** — Removed P-meter and flight from scope (was Phase 5). Cape powerup now gives spin attack only. Phase numbering updated. Graphics overhaul added as dedicated Phase 6 (not mixed with gameplay work).
+- **2026-04-27** — Phase 3 shipped. Touch controls wired in input.js: zone-based D-pad on #dpad container (14px deadzone, multi-touch safe), A=jump (KeyZ) / B=run (KeyX) round buttons. Portrait overlay already in main.js. Visual .pressed feedback on all buttons. Cache bust bumped to v=4.
 
 ---
 
