@@ -4,7 +4,7 @@ import { drawSprite } from '../sprites.js';
 import {
   PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R,
   PLAYER_SMALL_WALK2_R, PLAYER_SMALL_JUMP_R,
-} from '../player-sprites.js';
+} from '../player-sprites.js?v=18';
 
 const PHYS = {
   gravity: 0.45, maxFall: 7.0,
@@ -137,7 +137,7 @@ export function createPlayer(spawnCol, spawnRow) {
       // Walk animation
       if (this.onGround && Math.abs(this.vx) > 0.1) {
         this.walkTimer += Math.abs(this.vx) * dt;
-        if (this.walkTimer > 5) { this.walkFrame = 1 - this.walkFrame; this.walkTimer = 0; }
+        if (this.walkTimer > 12) { this.walkFrame = 1 - this.walkFrame; this.walkTimer = 0; }
       } else { this.walkTimer = 0; }
 
       if (this.invulnTimer > 0) this.invulnTimer -= dt;
