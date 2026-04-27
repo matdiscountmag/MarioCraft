@@ -39,7 +39,7 @@ export class Renderer {
 
   draw(levelData, camera, entities = [], player = null, gameState = {}) {
     const { ctx } = this;
-    const { particles = [], blockBumps = [] } = gameState;
+    const { particles = [], blockBumps = [], items = [] } = gameState;
 
     // Sky
     ctx.fillStyle = PALETTE.S;
@@ -48,6 +48,11 @@ export class Renderer {
     this._drawClouds(camera.x);
     this._drawTiles(levelData, camera, blockBumps);
     this._drawParticles(particles, camera);
+
+    // Items (mushrooms, coin pops) — behind player
+    for (const item of items) {
+      if (item.draw) item.draw(ctx, camera);
+    }
 
     for (const e of entities) {
       if (e.draw) e.draw(ctx, camera);
@@ -95,7 +100,6 @@ export class Renderer {
     }
   }
 
-  /** Draw brick debris and other particle effects. */
   _drawParticles(particles, camera) {
     if (!particles.length) return;
     const { ctx } = this;
@@ -103,7 +107,6 @@ export class Renderer {
       const sx = Math.round(p.x - camera.x);
       const sy = Math.round(p.y - camera.y);
       if (sx < -4 || sx > VIEWPORT_W + 4 || sy < -4 || sy > VIEWPORT_H + 4) continue;
-      // Fade out during the last third of lifetime
       const fade = p.life / p.maxLife;
       ctx.globalAlpha = fade < 0.33 ? fade * 3 : 1;
       ctx.fillStyle = p.color;
@@ -142,7 +145,7 @@ export class Renderer {
   }
 
   _drawHUD(gameState) {
-    // Phase 7 adds coin counter / lives.
+    // Phase 7 adds coin counter / lives display.
   }
 
   _drawDebugGrid(levelData, camera) {

@@ -253,3 +253,25 @@ export function drawSprite(ctx, sprite, px, py, flipX = false) {
     }
   }
 }
+
+// -- Items --
+
+// Mushroom powerup: orange cap with white spots, white stem, two-bump feet.
+export const ITEM_MUSHROOM = [
+  '......BBBB......',
+  '....BBBbbBBB....',
+  '...BbbBbbBBbB...',
+  '..BWWbbbbbbWbB..',
+  '..BWWbbbbbbWWB..',
+  '..BBbbbbbbbbBB..',
+  '...BBBBBBBBBB...',
+  '....WWWWWWWW....',
+  '....WuuuuuuW....',
+  '....WuuuuuuW....',
+  '....WWWWWWWW....',
+  '...WWuu..uuWW...',
+  '...WWuu..uuWW...',
+  '................',
+  '................',
+  '................',
+];
