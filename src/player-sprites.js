@@ -24,44 +24,45 @@ export const PLAYER_SMALL_STAND_R = [
   '....KKKKKK......',  // shoe base — row 15, flush with ground
 ];
 
-// Walk frame 1 — placeholder until walk CSV is provided
+// Walk frame 1 — from SmallMarioWalk.csv (arms-out running pose)
+// 15-wide CSV padded to 16 with one dot on the right.
 export const PLAYER_SMALL_WALK1_R = [
-  '................',
-  '.....KKKKKK.....',
-  '....KBBBBBBKK...',
-  '...KBBBBBBBBBK..',
-  '...KKKZZKZKKK...',
-  '..KZZKKZKZZZZK..',
-  '..KZZKKZZKZZZK..',
-  '...KKZZZKKKKK...',
-  '....KKZZZZZK....',
-  '...KBBKKBBK.....',
-  '..KBBBBKKBBK....',
-  '..KBBBBKKKKK....',
-  '...KZZZKKZKK....',
-  '...KZZBBKKKK....',
-  '....KBBBBK......',
-  '....KKKKKK......',
+  '.....KKKKK......',  // cap peak
+  '....KBBBBBKK....',  // cap
+  '...KBBBBBBBBK...',  // cap wide
+  '...KKKZZKZKK....',  // face top
+  '..KZZKKZKZZZK...',  // face
+  '..KZZKKZZKZZK...',  // face
+  '...KKZZZKKKK....',  // collar
+  '.KKKKKZZZZZKKKK.',  // arms out wide
+  'KZZBBBKKBBKBZZK.',  // upper body / arms
+  'KZZBBBBKKBKBZZK.',  // upper body / arms
+  '.KZBBBKKKKKBZK..',  // lower body
+  '..KKKKKKZ.ZKK...',  // overalls
+  '..KKKKKKKKKBK...',  // overalls lower
+  '.KBBKKKKKKBBK...',  // shoes top
+  '.KBBBK..KBBK....',  // shoes (legs apart)
+  '..KKK....KK.....',  // shoe base
 ];
 
-// Walk frame 2 — placeholder until walk CSV is provided
+// Walk frame 2 — same pose for now; bob gives the motion feel
 export const PLAYER_SMALL_WALK2_R = [
-  '................',
-  '.....KKKKKK.....',
-  '....KBBBBBBKK...',
-  '...KBBBBBBBBBK..',
-  '...KKKZZKZKKK...',
-  '..KZZKKZKZZZZK..',
-  '..KZZKKZZKZZZK..',
-  '...KKZZZKKKKK...',
-  '....KKZZZZZK....',
-  '...KBBKKBBK.....',
-  '..KBBBBKKBBK....',
-  '..KBBBBKKKKK....',
-  '...KZZZKKZKK....',
-  '...KZZBBKKKK....',
-  '....KBBBBK......',
-  '....KKKKKK......',
+  '.....KKKKK......',
+  '....KBBBBBKK....',
+  '...KBBBBBBBBK...',
+  '...KKKZZKZKK....',
+  '..KZZKKZKZZZK...',
+  '..KZZKKZZKZZK...',
+  '...KKZZZKKKK....',
+  '.KKKKKZZZZZKKKK.',
+  'KZZBBBKKBBKBZZK.',
+  'KZZBBBBKKBKBZZK.',
+  '.KZBBBKKKKKBZK..',
+  '..KKKKKKZ.ZKK...',
+  '..KKKKKKKKKBK...',
+  '.KBBKKKKKKBBK...',
+  '.KBBBK..KBBK....',
+  '..KKK....KK.....',
 ];
 
 // Jump — placeholder until jump CSV is provided
