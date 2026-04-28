@@ -1,10 +1,10 @@
 // player.js — Nicky, the pink hero. SMB3-style physics.
-import { resolveEntity } from '../physics.js';
-import { drawSprite } from '../sprites.js';
+import { resolveEntity } from '../physics.js?v=27';
+import { drawSprite } from '../sprites.js?v=27';
 import {
   PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R,
   PLAYER_SMALL_WALK2_R, PLAYER_SMALL_JUMP_R,
-} from '../player-sprites.js?v=25';
+} from '../player-sprites.js?v=27';
 
 const PHYS = {
   gravity: 0.45, maxFall: 7.0,
