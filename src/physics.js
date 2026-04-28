@@ -76,6 +76,8 @@ export function resolveEntity(entity, levelData) {
     const colRight = Math.floor((entity.x + entity.w - 1) / TILE_SIZE);
     for (let col = colLeft; col <= colRight; col++) {
       if (isSolid(getTile(levelData, col, probeRow))) {
+        entity.y  = probeRow * TILE_SIZE - entity.h;  // snap to exact grid
+        entity.vy = 0;
         entity.onGround = true;
         break;
       }
