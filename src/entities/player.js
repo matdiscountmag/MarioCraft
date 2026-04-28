@@ -1,10 +1,10 @@
 // player.js — Nicky, the pink hero. SMB3-style physics.
-import { resolveEntity } from '../physics.js?v=27';
-import { drawSprite } from '../sprites.js?v=27';
+import { resolveEntity } from '../physics.js?v=28';
+import { drawSprite } from '../sprites.js?v=28';
 import {
   PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R,
   PLAYER_SMALL_WALK2_R, PLAYER_SMALL_JUMP_R,
-} from '../player-sprites.js?v=27';
+} from '../player-sprites.js?v=28';
 
 const PHYS = {
   gravity: 0.45, maxFall: 7.0,
@@ -155,7 +155,7 @@ export function createPlayer(spawnCol, spawnRow) {
       if (this.airTimer > 4) {
         sprite = PLAYER_SMALL_JUMP_R;
       } else if (Math.abs(this.vx) > 0.1) {
-        sprite = this.walkFrame === 0 ? PLAYER_SMALL_WALK1_R : PLAYER_SMALL_WALK2_R;
+        sprite = this.walkFrame === 0 ? PLAYER_SMALL_WALK1_R : PLAYER_SMALL_STAND_R;
         // sy -= this.walkFrame;  // 1px bob — disabled
       } else {
         sprite = PLAYER_SMALL_STAND_R;
