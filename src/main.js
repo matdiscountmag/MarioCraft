@@ -2,10 +2,10 @@
 
 import { createInput }   from './input.js';
 import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=33';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=32';
+import { createPlayer }  from './entities/player.js?v=33';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
 
