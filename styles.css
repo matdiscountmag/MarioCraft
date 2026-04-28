@@ -84,6 +84,21 @@ html, body {
   align-items: center;
 }
 
+/* Coin counter — pushed to right side of HUD bar */
+#hud-coins {
+  margin-left: auto;
+  color: #F8F8F8;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+#hud-coin-icon {
+  color: #F8B800;  /* coin gold */
+}
+
 /* ── Touch control overlay (Phase 3) ────────────────────────────────── */
 
 #controls {

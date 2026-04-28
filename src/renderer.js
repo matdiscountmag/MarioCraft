@@ -283,24 +283,7 @@ export class Renderer {
   // ── HUD ───────────────────────────────────────────────────────────────────
 
   _drawHUD(gameState) {
-    const coins = gameState.coins || 0;
-    const ctx   = this.ctx;
-
-    // Coin icon — small gold circle with dark outline
-    const ix = 8, iy = 8;
-    ctx.fillStyle = '#000000';
-    ctx.beginPath(); ctx.arc(ix, iy, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = PALETTE.C;   // coin gold #F8B800
-    ctx.beginPath(); ctx.arc(ix, iy, 3, 0, Math.PI * 2); ctx.fill();
-
-    // "×NN" — black shadow 1px down-right, then white text
-    const label = '×' + String(coins).padStart(2, '0');
-    ctx.font = 'bold 8px monospace';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#000000';
-    ctx.fillText(label, 15, iy + 1);   // shadow
-    ctx.fillStyle = '#F8F8F8';
-    ctx.fillText(label, 14, iy);       // foreground
+    // Coin counter lives in the HTML #hud bar — updated by main.js each frame.
   }
 
   // ── Debug grid ────────────────────────────────────────────────────────────

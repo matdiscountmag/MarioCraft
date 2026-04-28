@@ -2,10 +2,10 @@
 
 import { createInput }   from './input.js';
 import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=33';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=34';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=33';
+import { createPlayer }  from './entities/player.js?v=34';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
 
@@ -66,11 +66,20 @@ function checkOrientation() {
 window.addEventListener('resize', checkOrientation);
 checkOrientation();
 
+const hudCoins    = document.getElementById('hud-coins');
+let   shownCoins  = -1;
+function updateCoinDisplay() {
+  if (!hudCoins || coins === shownCoins) return;
+  shownCoins = coins;
+  hudCoins.innerHTML = '<span id="hud-coin-icon" style="color:#F8B800">●</span> ×' + String(coins).padStart(2, '0');
+}
+
 const modeBtn = document.getElementById('btn-mode');
 if (modeBtn) {
   modeBtn.addEventListener('click', () => {
     editor.toggle();
-    modeBtn.textContent = editor.active ? 'Play' : 'Edit';
+    modeBtn.textContent = editor.active ? 'Play' : '✎ Edit';
+    if (hudCoins) hudCoins.style.display = editor.active ? 'none' : '';
   });
 }
 
@@ -172,6 +181,7 @@ function loop(now) {
     items: [...items, ...coinPops],
   });
   editor.draw(renderer.ctx, camera);
+  updateCoinDisplay();
 
   requestAnimationFrame(loop);
 }
