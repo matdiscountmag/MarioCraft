@@ -80,6 +80,10 @@ invulnAfterHit:        90       # frames
 
 Feel benchmarks: ~4-tile standing jump (confirmed), ~6 tiles running hold (confirmed). Heavy gravity on the way down.
 
+### Mobile run control
+
+On touch, B is a **tap-to-toggle** for run — tap once to lock run on (button stays highlighted), tap again to unlock. Keyboard hold-to-run is unchanged. `input.resetRunToggle()` is exposed on the input object and called when switching to edit mode. This avoids the two-thumb problem of holding B while pressing A to jump.
+
 ### Variable jump
 
 A-press fires the base impulse. While A is held (up to ~12 frames), apply small upward force. On A-release while still rising, cut velocity. Short tap = small hop, hold = full jump.
@@ -215,7 +219,7 @@ Sprites are arrays of equal-length strings, 1 char = 1 game pixel. `drawSprite(c
 
 Render: iterate rows × cols, fill 1×1 rect at game-pixel coords, scale via canvas size + `imageRendering: pixelated`. Flip horizontally by reversing column order at draw time (don't store mirrored copies).
 
-**Animation**: 2-frame walk cycle alternates between `PLAYER_SMALL_WALK1_R` (arms out) and `PLAYER_SMALL_STAND_R` (arms at sides). Cycle based on horizontal speed (`walkTimer += |vx| * dt`; flip frame when timer exceeds **4** — tuned for feel, do not revert). Speed-dependent: naturally faster when running. Spin attack = 4 fast frames (not yet implemented).
+**Animation**: 2-frame walk cycle alternates between `PLAYER_SMALL_WALK1_R` (arms out) and `PLAYER_SMALL_STAND_R` (arms at sides). Cycle based on horizontal speed (`walkTimer += |vx| * dt`; flip frame when timer exceeds **3** — tuned for feel, do not revert). Speed-dependent: naturally faster when running. Spin attack = 4 fast frames (not yet implemented).
 
 ### CSV → sprite array workflow
 
@@ -236,21 +240,30 @@ entity.vy = 0;
 entity.onGround = true;
 ```
 
+### Canvas text is always fuzzy — use DOM for HUD
+
+`ctx.fillText()` on a 256×224 canvas applies subpixel antialiasing at canvas resolution, then the CSS scale magnifies those blurred pixels. The result always looks fuzzy compared to sprite art drawn as filled rectangles.
+
+**Rule**: never use `ctx.fillText()` for any in-game UI (coin counter, score, lives). Instead, put HUD text in real DOM elements inside `#hud` or a separate overlay div. DOM text renders at full screen resolution and stays crisp. Update element `.textContent` from the game loop only when the value changes (not every frame) to avoid layout thrash.
+
 ### ES module cache-busting
 
 Bumping `?v=N` on `<script src="main.js?v=N">` in `index.html` only forces `main.js` to re-fetch. Sub-modules imported inside JS files are cached separately by the browser's module map and will **not** update unless their import URL also changes.
 
-**Rule**: whenever `player-sprites.js` (or any other sub-module) changes, bump the version string in **both** `index.html` AND the `import` statement(s) that reference that file:
+**Rule**: every `import` in every JS file needs its own `?v=N`. This includes `input.js`, `renderer.js`, `editor.js`, `level.js` — not just the entity/sprite files. When caught without a version string, add one and bump it immediately.
 
 ```js
-// in main.js — bump when player.js changes
-import { createPlayer } from './entities/player.js?v=18';
+// in main.js — all imports need version strings
+import { createInput }              from './input.js?v=37';
+import { Renderer, createCamera }   from './renderer.js?v=37';
+import { createPlayer }             from './entities/player.js?v=37';
 
-// in player.js — bump when player-sprites.js changes
-import { PLAYER_SMALL_STAND_R, ... } from '../player-sprites.js?v=18';
+// in player.js
+import { resolveEntity }            from '../physics.js?v=37';
+import { PLAYER_SMALL_STAND_R, ... } from '../player-sprites.js?v=37';
 ```
 
-Keep all version numbers in sync.
+Keep all version numbers in sync across every file.
 
 ---
 
@@ -435,7 +448,8 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-27** — Repo reorganized into prod/ (GitHub Pages), backup/ (pre-phase snapshots), and assets/ (working files). §7 updated to reflect new structure. Backup-before-phase policy added.
 - **2026-04-27** — Phase 5 shipped: Edit mode. LEVEL_ROWS expanded 14→48 (ground rows 46–47, sky ceiling row 2, build space rows 2–45). Vertical camera scroll added (32px dead-zone, clamped). editor.js: right-side 32px palette strip with 8 slots (erase, ground_top, ground, hard, brick, qblock, coin, pipe), drag-to-pan with 5px threshold, auto-save on every change, compound pipe placement (2×2) + smart erasure, sky limit dashed line, grid overlay. ? block contents random at runtime (70% coin, 30% mushroom). Entity placement and spawn marker deferred to Phase 8. Reset (clears localStorage) and Export (downloads level.json) added to HUD.
 - **2026-04-27** — Physics ground probe snap fix: probe now snaps `y = probeRow * TILE_SIZE - h` and zeros `vy` in addition to setting `onGround=true`. Without this, sub-pixel gravity drift caused 1px vertical flicker during standing. Walk animation: switched to alternating `WALK1_R` ↔ `STAND_R` (was both frames identical, causing sliding look). Walk timer threshold tuned from 20 → 4 for correct feel; do not revert. Cache bust at v=32.
-- **2026-04-27** — Phase 6 shipped. Remaining art (Nicky color pass, Super Nicky sprites, enemy sprites) deferred to Phase 8 (final art pass). Completed: background decorations (clouds/hills/bushes) world-positioned at wy≈562–736 so they're visible during play (camera.y≈544); draw order sky→hills→bushes→clouds→tiles. Ground tile improved with dark green shadow + tan separator row. Brick tile redesigned with black mortar grid (upper/lower offset bricks). Used block redesigned with black border (matching ? block family) + gray interior. Mushroom sprite added (new R/r palette entries). Small Nicky standing sprite replaced with pixel-perfect CSV-derived art (K/B/Z placeholder colors; intended pink/purple pending color pass). Walk frame added (arms-out pose from CSV, 1px bob). Bug fixed: canvas `arc(..., Math.PI, 0, true)` draws bottom half (downward), not top — all background arcs changed to `false`. ES module cache-busting rule established: bump version in import statements too, not just index.html. Cache bust at v=18.
+- **2026-04-27** — Phase 6 shipped. Remaining art (Nicky color pass, Super Nicky sprites, enemy sprites) deferred to Phase 8 (final art pass).
+- **2026-04-27** — Phase 7 started. Coin counter added as DOM element in #hud (not canvas — canvas text is always fuzzy at 256×224 resolution). #hud background removed (was dark bar covering gameplay). Mobile B button changed to tap-to-toggle run (keyboard hold unchanged). Walk animation threshold tuned to 3. Version strings added to input.js and renderer.js imports (were missing). Cache bust at v=38. Completed: background decorations (clouds/hills/bushes) world-positioned at wy≈562–736 so they're visible during play (camera.y≈544); draw order sky→hills→bushes→clouds→tiles. Ground tile improved with dark green shadow + tan separator row. Brick tile redesigned with black mortar grid (upper/lower offset bricks). Used block redesigned with black border (matching ? block family) + gray interior. Mushroom sprite added (new R/r palette entries). Small Nicky standing sprite replaced with pixel-perfect CSV-derived art (K/B/Z placeholder colors; intended pink/purple pending color pass). Walk frame added (arms-out pose from CSV, 1px bob). Bug fixed: canvas `arc(..., Math.PI, 0, true)` draws bottom half (downward), not top — all background arcs changed to `false`. ES module cache-busting rule established: bump version in import statements too, not just index.html. Cache bust at v=18.
 
 ---
 
