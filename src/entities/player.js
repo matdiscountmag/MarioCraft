@@ -1,5 +1,5 @@
 // player.js — Nicky, the pink hero. SMB3-style physics.
-import { resolveEntity } from '../physics.js?v=34';
+import { resolveEntity } from '../physics.js?v=35';
 import { drawSprite } from '../sprites.js?v=28';
 import {
   PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R,
@@ -141,7 +141,7 @@ export function createPlayer(spawnCol, spawnRow) {
       // Walk animation
       if (this.onGround && Math.abs(this.vx) > 0.1) {
         this.walkTimer += Math.abs(this.vx) * dt;
-        if (this.walkTimer > 4) { this.walkFrame = 1 - this.walkFrame; this.walkTimer = 0; }
+        if (this.walkTimer > 3) { this.walkFrame = 1 - this.walkFrame; this.walkTimer = 0; }
       } else { this.walkTimer = 0; }
 
       if (this.invulnTimer > 0) this.invulnTimer -= dt;
