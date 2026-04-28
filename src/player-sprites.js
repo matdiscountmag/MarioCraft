@@ -25,43 +25,43 @@ export const PLAYER_SMALL_STAND_R = [
 ];
 
 // Walk frame 1 — from SmallMarioWalk.csv (arms-out running pose)
-// 15-wide CSV padded to 16 with one dot on the right.
+// 15-wide × 15-tall CSV → padded to 16 wide (1 dot right) + empty top row for positioning.
 export const PLAYER_SMALL_WALK1_R = [
-  '.....KKKKK......',  // cap peak
-  '....KBBBBBKK....',  // cap
-  '...KBBBBBBBBK...',  // cap wide
-  '...KKKZZKZKK....',  // face top
-  '..KZZKKZKZZZK...',  // face
-  '..KZZKKZZKZZK...',  // face
-  '...KKZZZKKKK....',  // collar
+  '................',  // empty top (shoe base lands at row 15)
+  '.....KKKKKK.....',  // cap peak
+  '....KBBBBBBKK...',  // cap
+  '...KBBBBBBBBBK..',  // cap wide
+  '...KKKZZKZKKK...',  // face top
+  '..KZZKKZKZZZZK..',  // face
+  '..KZZKKZZKZZZK..',  // face
+  '...KKZZZKKKKK...',  // collar
   '.KKKKKZZZZZKKKK.',  // arms out wide
   'KZZBBBKKBBKBZZK.',  // upper body / arms
   'KZZBBBBKKBKBZZK.',  // upper body / arms
   '.KZBBBKKKKKBZK..',  // lower body
   '..KKKKKKZ.ZKK...',  // overalls
-  '..KKKKKKKKKBK...',  // overalls lower
   '.KBBKKKKKKBBK...',  // shoes top
-  '.KBBBK..KBBK....',  // shoes (legs apart)
+  '.KBBBK..KBBKK...',  // shoes (legs apart)
   '..KKK....KK.....',  // shoe base
 ];
 
-// Walk frame 2 — same pose for now; bob gives the motion feel
+// Walk frame 2 — same pose for now
 export const PLAYER_SMALL_WALK2_R = [
-  '.....KKKKK......',
-  '....KBBBBBKK....',
-  '...KBBBBBBBBK...',
-  '...KKKZZKZKK....',
-  '..KZZKKZKZZZK...',
-  '..KZZKKZZKZZK...',
-  '...KKZZZKKKK....',
+  '................',
+  '.....KKKKKK.....',
+  '....KBBBBBBKK...',
+  '...KBBBBBBBBBK..',
+  '...KKKZZKZKKK...',
+  '..KZZKKZKZZZZK..',
+  '..KZZKKZZKZZZK..',
+  '...KKZZZKKKKK...',
   '.KKKKKZZZZZKKKK.',
   'KZZBBBKKBBKBZZK.',
   'KZZBBBBKKBKBZZK.',
   '.KZBBBKKKKKBZK..',
   '..KKKKKKZ.ZKK...',
-  '..KKKKKKKKKBK...',
   '.KBBKKKKKKBBK...',
-  '.KBBBK..KBBK....',
+  '.KBBBK..KBBKK...',
   '..KKK....KK.....',
 ];
 
