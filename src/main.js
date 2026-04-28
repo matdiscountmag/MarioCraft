@@ -5,7 +5,7 @@ import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from '
 import { Renderer, createCamera, updateCamera } from './renderer.js';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=24';
+import { createPlayer }  from './entities/player.js?v=25';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
 

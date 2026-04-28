@@ -4,7 +4,7 @@ import { drawSprite } from '../sprites.js';
 import {
   PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R,
   PLAYER_SMALL_WALK2_R, PLAYER_SMALL_JUMP_R,
-} from '../player-sprites.js?v=24';
+} from '../player-sprites.js?v=25';
 
 const PHYS = {
   gravity: 0.45, maxFall: 7.0,
@@ -33,6 +33,7 @@ export function createPlayer(spawnCol, spawnRow) {
     jumpBuffer: 0,
     pMeter: 0,
     walkFrame: 0, walkTimer: 0,
+    airTimer: 0,
     invulnTimer: 0,
 
     // world: optional callbacks { breakBrick(col,row), bumpBlock(col,row) }
@@ -134,6 +135,9 @@ export function createPlayer(spawnCol, spawnRow) {
         this.vx = 0; this.vy = 0;
       }
 
+      // Air timer — only show jump sprite after 4 frames off the ground
+      if (this.onGround) { this.airTimer = 0; } else { this.airTimer += dt; }
+
       // Walk animation
       if (this.onGround && Math.abs(this.vx) > 0.1) {
         this.walkTimer += Math.abs(this.vx) * dt;
@@ -148,7 +152,7 @@ export function createPlayer(spawnCol, spawnRow) {
       const sx = Math.round(this.x - camera.x);
       let sy = Math.round(this.y - camera.y);
       let sprite;
-      if (!this.onGround) {
+      if (this.airTimer > 4) {
         sprite = PLAYER_SMALL_JUMP_R;
       } else if (Math.abs(this.vx) > 0.1) {
         sprite = this.walkFrame === 0 ? PLAYER_SMALL_WALK1_R : PLAYER_SMALL_WALK2_R;
