@@ -65,22 +65,22 @@ export const PLAYER_SMALL_WALK2_R = [
   '..KKK....KK.....',
 ];
 
-// Jump — placeholder until jump CSV is provided
+// Jump — from smallmariojump.csv. Exactly 16×16, no padding needed.
 export const PLAYER_SMALL_JUMP_R = [
-  '................',
-  '.....KKKKKK.....',
-  '....KBBBBBBKK...',
-  '...KBBBBBBBBBK..',
-  '...KKKZZKZKKK...',
-  '..KZZKKZKZZZZK..',
-  '..KZZKKZZKZZZK..',
-  '...KKZZZKKKKK...',
-  '....KKZZZZZK....',
-  '...KBBKKBBK.....',
-  '..KBBBBKKBBK....',
-  '..KBBBBKKKKK....',
-  '...KZZZKKZKK....',
-  '...KZZBBKKKK....',
-  '....KBBBBK......',
-  '....KKKKKK......',
+  '.....KKKKKK..KK.',  // cap peak (arm reaching up-right)
+  '....KBBBBBBKKZZK',  // cap
+  '...KBBBBBBBBBKZK',  // cap wide
+  '...KKKZZKZKKKZZK',  // face
+  '..KZZKKZKZZZZBK.',  // face / arm
+  '..KZZKKZZKZZZBK.',  // face / arm
+  '...KKZZZKKKKKBK.',  // collar / arm
+  '.KBBBKZZZZZKKK..',  // torso / arm out
+  'KZZBBKBBBKBK....',  // body
+  'KZZKBBKBBKKKKK..',  // body
+  'KZZKBKKZKZKKBBK.',  // body / legs
+  '.KKKKKKKKKKBBBK.',  // overalls
+  '..KBKKKKKKKBBK..',  // legs
+  '.KBBBKKKKKKBBK..',  // shoes top
+  '.KBBKKKK...KK...',  // shoes (tucked)
+  '..KK.KK.........',  // shoe base
 ];
