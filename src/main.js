@@ -1,11 +1,11 @@
 // main.js - Bootstrap + game loop.
 
-import { createInput }   from './input.js';
+import { createInput }   from './input.js?v=37';
 import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=36';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=37';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=36';
+import { createPlayer }  from './entities/player.js?v=37';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
 
@@ -81,6 +81,7 @@ if (modeBtn) {
     editor.toggle();
     modeBtn.textContent = editor.active ? 'Play' : '✎ Edit';
     if (hudCoins) hudCoins.style.display = editor.active ? 'none' : '';
+    if (editor.active) input.resetRunToggle();
   });
 }
 

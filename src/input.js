@@ -17,8 +17,9 @@ export function createInput() {
   };
 
   const _keys = {};
-  let _jumpLatch = false;
-  let _runLatch  = false;
+  let _jumpLatch  = false;
+  let _runLatch   = false;
+  let _runToggle  = false; // touch-only toggle — tap B to lock/unlock run
 
   window.addEventListener('keydown', e => {
     if (_keys[e.code]) return; // ignore key-repeat
@@ -37,7 +38,7 @@ export function createInput() {
     state.up    = !!(_keys['ArrowUp']);
     state.down  = !!(_keys['ArrowDown']  || _keys['KeyS']);
     state.jump  = !!(_keys['KeyZ'] || _keys['Space']);
-    state.run   = !!(_keys['KeyX'] || _keys['ShiftLeft'] || _keys['ShiftRight']);
+    state.run   = !!(_keys['KeyX'] || _keys['ShiftLeft'] || _keys['ShiftRight']) || _runToggle;
 
     // Transfer latches — true for one poll cycle, then cleared
     state.jumpPressed = _jumpLatch;
@@ -155,10 +156,24 @@ export function createInput() {
     }
 
     wireBtn(btnA, 'KeyZ'); // A = jump
-    wireBtn(btnB, 'KeyX'); // B = run / fire
+
+    // B = toggle run lock (tap to turn on, tap again to turn off)
+    btnB.addEventListener('touchstart', e => {
+      e.preventDefault();
+      _runToggle = !_runToggle;
+      btnB.classList.toggle('pressed', _runToggle);
+    }, { passive: false });
+    btnB.addEventListener('touchend',   e => e.preventDefault(), { passive: false });
+    btnB.addEventListener('touchcancel', e => e.preventDefault());
   }
 
   initTouchControls();
 
-  return { state, poll, setVirtualKey };
+  function resetRunToggle() {
+    _runToggle = false;
+    const btnB = document.getElementById('btn-b');
+    if (btnB) btnB.classList.remove('pressed');
+  }
+
+  return { state, poll, setVirtualKey, resetRunToggle };
 }
