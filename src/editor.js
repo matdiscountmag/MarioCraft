@@ -1,12 +1,14 @@
-// editor.js - Edit mode: palette strip, tile placement/deletion, drag-to-pan, save/export.
+// editor.js - Edit mode: palette strip, tile placement/deletion, drag-to-pan, arrow-key scroll.
 
-import { TILE_SIZE, LEVEL_COLS, LEVEL_ROWS, setTile, getTile, saveLevel } from './level.js';
+import { TILE_SIZE, LEVEL_COLS, LEVEL_ROWS, setTile, getTile, saveLevel } from './level.js?v=43';
 import {
   drawSprite,
   TILE_GROUND_TOP, TILE_GROUND, TILE_HARD, TILE_BRICK,
   TILE_QBLOCK, TILE_COIN, TILE_GOAL, WALKER_1,
-} from './sprites.js';
-import { VIEWPORT_W, VIEWPORT_H } from './renderer.js';
+} from './sprites.js?v=43';
+import { VIEWPORT_W, VIEWPORT_H } from './renderer.js?v=43';
+
+const SCROLL_SPEED = 4; // px per frame when arrow key held
 
 const PALETTE_W  = 32;
 const PALETTE_X  = VIEWPORT_W - PALETTE_W;
@@ -35,6 +37,11 @@ export function createEditor(canvas, levelData) {
   let active       = false;
   let selectedSlot = 0;
   const _cam = { x: 0, y: 0 };
+
+  // Arrow key scroll tracking (editor-internal, independent of input.js)
+  const _editorKeys = new Set();
+  window.addEventListener('keydown', e => { if (active) _editorKeys.add(e.code); });
+  window.addEventListener('keyup',   e => { _editorKeys.delete(e.code); });
 
   let dragStart    = null;
   let dragCamStart = null;
@@ -166,6 +173,7 @@ export function createEditor(canvas, levelData) {
 
     toggle() {
       active = !active;
+      _editorKeys.clear(); // prevent stuck keys when toggling
       const controls = document.getElementById('controls');
       if (controls) controls.style.visibility = active ? 'hidden' : 'visible';
       const editTools = document.getElementById('edit-tools');
@@ -174,12 +182,28 @@ export function createEditor(canvas, levelData) {
 
     update(camera) {
       if (!active) return;
-      if (isDragging) {
-        camera.x = _cam.x;
-        camera.y = _cam.y;
-      } else {
+
+      // Sync _cam from camera when not drag-controlling it
+      if (!isDragging) {
         _cam.x = camera.x;
         _cam.y = camera.y;
+      }
+
+      // Arrow key scroll
+      const MAX_X = LEVEL_COLS * TILE_SIZE - VIEWPORT_W;
+      const MAX_Y = LEVEL_ROWS * TILE_SIZE - VIEWPORT_H;
+      const scrolling =
+        _editorKeys.has('ArrowLeft') || _editorKeys.has('ArrowRight') ||
+        _editorKeys.has('ArrowUp')   || _editorKeys.has('ArrowDown');
+      if (_editorKeys.has('ArrowLeft'))  _cam.x = Math.max(0,     _cam.x - SCROLL_SPEED);
+      if (_editorKeys.has('ArrowRight')) _cam.x = Math.min(MAX_X, _cam.x + SCROLL_SPEED);
+      if (_editorKeys.has('ArrowUp'))    _cam.y = Math.max(0,     _cam.y - SCROLL_SPEED);
+      if (_editorKeys.has('ArrowDown'))  _cam.y = Math.min(MAX_Y, _cam.y + SCROLL_SPEED);
+
+      // Push _cam → camera when dragging or scrolling with keys
+      if (isDragging || scrolling) {
+        camera.x = _cam.x;
+        camera.y = _cam.y;
       }
     },
 

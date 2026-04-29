@@ -1,16 +1,16 @@
 // main.js - Bootstrap + game loop.
 
-import { createInput }   from './input.js?v=42';
-import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=42';
-import { createEditor }  from './editor.js';
-import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=42';
-import { createWalker }  from './entities/walker.js?v=42';
-import { PALETTE }       from './sprites.js';
-import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=42';
-import { createCoinPop, createMushroom } from './items.js';
-import { CHARACTERS } from './characters.js';
+import { createInput }   from './input.js?v=43';
+import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js?v=43';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=43';
+import { createEditor }  from './editor.js?v=43';
+import { createAudio }   from './audio.js?v=43';
+import { createPlayer }  from './entities/player.js?v=43';
+import { createWalker }  from './entities/walker.js?v=43';
+import { PALETTE }       from './sprites.js?v=43';
+import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=43';
+import { createCoinPop, createMushroom } from './items.js?v=43';
+import { CHARACTERS } from './characters.js?v=43';
 
 const canvas = document.getElementById('game-canvas');
 const input  = createInput();
@@ -215,14 +215,31 @@ function updateCoinDisplay() {
 
 // ── HUD button wiring ─────────────────────────────────────────────────────────
 
-const modeBtn = document.getElementById('btn-mode');
+const modeBtn     = document.getElementById('btn-mode');
+const startOverBtn = document.getElementById('btn-start-over');
+
 if (modeBtn) {
   modeBtn.addEventListener('click', () => {
     editor.toggle();
     modeBtn.textContent = editor.active ? 'Play' : '✎ Edit';
-    if (hudCoins) hudCoins.style.display = editor.active ? 'none' : '';
-    if (editor.active) input.resetRunToggle();
+    if (hudCoins)     hudCoins.style.display     = editor.active ? 'none' : '';
+    if (charBtn)      charBtn.style.display      = editor.active ? 'none' : '';
+    if (startOverBtn) startOverBtn.style.display = editor.active ? 'none' : '';
+    if (editor.active) {
+      input.resetRunToggle();
+    } else {
+      // Rebuild live entities from level data when returning to play mode
+      entities.length = 0;
+      for (const e of (level.entities || [])) {
+        if (e.type === 'walker' || e.type === 'stomper') entities.push(createWalker(e.x, e.y));
+      }
+    }
   });
+}
+
+if (startOverBtn) {
+  startOverBtn.addEventListener('click', () => window.location.reload());
+  startOverBtn.addEventListener('touchend', e => { e.preventDefault(); window.location.reload(); });
 }
 
 const charBtn = document.getElementById('btn-char');
@@ -244,21 +261,6 @@ if (resetBtn) {
   });
 }
 
-const exportBtn = document.getElementById('btn-export');
-if (exportBtn) {
-  exportBtn.addEventListener('click', () => {
-    const json = JSON.stringify(level, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'level.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-}
 
 window.addEventListener('keydown', e => {
   if (e.code === 'Backquote') renderer.debug = !renderer.debug;

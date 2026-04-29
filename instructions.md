@@ -347,7 +347,8 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 - **Phase 7 — Finish line**: Goal post tile placeable in editor. Touching it shows "Level Clear!" message and pauses play. Death animation (brief fall + fade) when player takes a fatal hit, then respawn at spawn marker. No lives, no game over screen.
 - **Phase 8 — Enemy**: Single walker enemy (goomba-style dome-head, original sprite). Walks, reverses at walls, stomp = defeat, side touch = damage. Placeable in edit mode via palette strip.
 - **Phase 9 — Character selector**: Simple character select screen shown before play. Player picks a character, hits Play. Characters share the same sprite artwork — each is defined by a palette color override (a `colors` object mapping sprite palette keys to new hex values). No CSV upload needed per character. Nicky (default, no overrides) is always first; additional characters appended to `characters.js`. `drawSprite` accepts an optional `colors` parameter for per-draw overrides.
-- **Phase 10 — Graphics refinement + SFX**: Super Nicky sprites, SFX via Web Audio API (no library, ~80 lines in audio.js — jump, coin collect, block hit, death tones).
+- **Phase 10 — Edit mode polish**: Arrow key scroll in edit mode; walkers placed in editor now appear on return to play (entity array rebuild on mode switch); Export button removed; Char button hidden in edit mode; Start Over button added to play-mode HUD (reload without clearing level edits, distinct from Reset which wipes the level).
+- **Phase 11 — Graphics refinement + SFX**: Super Nicky sprites, SFX via Web Audio API (no library, ~80 lines in audio.js — jump, coin collect, block hit, death tones).
 
 ### Removed from scope (may revisit)
 - Lives counter and game over screen
@@ -454,6 +455,8 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-29** — Phase 8 shipped. Walker enemy: dome-headed original sprite (WALKER_1/WALKER_2 in sprites.js), two walk frames. Walks at 0.6px/frame, reverses at walls (vx zeroed by physics) and ledge edges (ground probe ahead). Stomp from above = defeat + 5px bounce; side contact = Small→die or Super→shrink+90 invuln frames. Editor: 10th palette slot (entity type), tap to place/remove walker, teal border highlight in edit mode, erase tool also removes entities. Two default walkers at col 15 and col 43. editor.js truncation bug fixed (file was cut mid-line since Phase 7). Cache bust at v=40.
 - **2026-04-29** — Phase 7 shipped. Goal tile added (checkerboard yellow/white, 16×16). Touching it shows "LEVEL CLEAR!" DOM overlay (NES gold border, coin count, Play Again button). Death: fall off world bottom triggers dead flag — player falls and fades to transparent over 60 frames, then window.location.reload() (no respawn, no lives). Editor palette expanded to 9 slots (goal added as slot 9). Goal post placed at [45][92] in default level. Cache bust at v=39.
 - **2026-04-29** — Phase 9 shipped. Character select screen shown on load before game starts. Characters share sprites; each defined by a `colors` palette override map in `characters.js`. `drawSprite` updated to accept optional `colors` arg (backward-compatible). player.js gets `colors: null` field set by `startGame()`. Two characters: Nicky (default palette) and Dex (B → deep blue). DOM overlay `#char-select-overlay` with dynamic cards built from CHARACTERS array; `drawCharPreview()` renders 16×16 sprite onto card canvas with color overrides, CSS-scaled to 64×64 pixelated. Selection persisted in localStorage. Enter/Space starts game from keyboard. Pink Nicky color correction requirement removed — Nicky's placeholder colors (B=#C84800 brick-red cap/shoes, Z=#FCB89C skin) are the final canonical colors. Cache bust at v=42.
+- **2026-04-29** — Phase 10 shipped. Edit mode polish: (1) Arrow key scroll — editor.js tracks its own key state independently of input.js; ArrowLeft/Right/Up/Down scroll camera at 4px/frame; keys cleared on mode toggle to prevent stuck input. (2) Walker entity rebuild — switching from edit to play mode now rebuilds the live `entities` array from `level.entities`, so walkers placed in the editor appear immediately. (3) HUD cleanup: Export button removed; Char and Start Over buttons hidden in edit mode; Reset button relabelled "⚠ Reset Level". (4) Start Over button added to play-mode HUD — `window.location.reload()` without clearing localStorage, restarting from spawn with level edits intact. Cache bust at v=43.
+- **2026-04-29** — Post-Phase-9 UX polish. (1) "👤 Char" HUD button added beside Edit — reopens character select overlay mid-session and pauses game. (2) Death animation cutoff reduced 90→65 frames; pressing jump after 30 frames also skips to reload immediately. (3) Jump button (A) confirms both overlays: starts game on character select, reloads on Level Clear (30-frame lockout to prevent accidental trigger). (4) Left/right d-pad and arrow keys cycle characters on the select screen. Bug: wiring left/right in both a keydown handler AND the loop's edge detection caused a double-cycle — with 2 characters the cycles cancelled out and nothing appeared to happen. Fix: remove from keydown handler, use loop edge detection only (works for keyboard and touch uniformly).
 
 ---
 
@@ -479,8 +482,9 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 4 — Environment physics (brick breaking, ? blocks, coins, Mushroom → Super)
 - [x] Phase 5 — Edit mode
 - [x] Phase 6 — Graphics overhaul (backgrounds, improved tiles, Small Nicky sprites)
-- [ ] Phase 7 — Finish line (goal post, Level Clear, death animation + respawn)
-- [ ] Phase 8 — Enemy (walker, stomp mechanic, editor-placeable)
+- [x] Phase 7 — Finish line (goal post, Level Clear, death animation + respawn)
+- [x] Phase 8 — Enemy (walker, stomp mechanic, editor-placeable)
 - [x] Phase 9 — Character selector (pick screen, palette-override characters)
-- [ ] Phase 10 — Graphics refinement + SFX (Super Nicky sprites, Web Audio API sounds)
+- [x] Phase 10 — Edit mode polish (arrow scroll, entity rebuild, HUD cleanup)
+- [ ] Phase 11 — Graphics refinement + SFX (Super Nicky sprites, Web Audio API sounds)
 ```

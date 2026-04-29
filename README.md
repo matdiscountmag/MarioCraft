@@ -20,4 +20,5 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 7 — Finish line (goal post tile, Level Clear screen, death animation + restart)
 - [x] Phase 8 — Enemy (walker enemy, original sprite, stomp mechanic, editor-placeable)
 - [x] Phase 9 — Character selector (select screen before play, palette-override characters)
-- [ ] Phase 10 — Graphics refinement + SFX (Super Nicky sprites, sound effects)
+- [x] Phase 10 — Edit mode polish (arrow key scroll, entity rebuild on play, HUD cleanup)
+- [ ] Phase 11 — Graphics refinement + SFX (Super Nicky sprites, sound effects)
