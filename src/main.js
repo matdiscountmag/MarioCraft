@@ -34,9 +34,12 @@ const particles  = [];
 const blockBumps = [];
 const items      = [];
 const coinPops   = [];
-let   coins      = 0;
-let   levelClear  = false;
-let   gameStarted = false;
+let   coins          = 0;
+let   levelClear     = false;
+let   levelClearTimer = 0;
+let   gameStarted    = false;
+let   prevLeft       = false;
+let   prevRight      = false;
 
 // ── Character select ──────────────────────────────────────────────────────────
 
@@ -58,6 +61,13 @@ function drawCharPreview(previewCanvas, colors) {
       ctx2.fillRect(c, r, 1, 1);
     }
   }
+}
+
+function cycleChar(dir) {
+  const idx  = CHARACTERS.findIndex(c => c.id === selectedCharId);
+  const next = (idx + dir + CHARACTERS.length) % CHARACTERS.length;
+  selectedCharId = CHARACTERS[next].id;
+  buildCharCards();
 }
 
 function buildCharCards() {
@@ -215,6 +225,16 @@ if (modeBtn) {
   });
 }
 
+const charBtn = document.getElementById('btn-char');
+if (charBtn) {
+  charBtn.addEventListener('click', () => {
+    gameStarted = false;
+    buildCharCards();
+    if (charSelectOverlay) charSelectOverlay.style.display = 'flex';
+  });
+  charBtn.addEventListener('touchend', e => { e.preventDefault(); charBtn.click(); });
+}
+
 const resetBtn = document.getElementById('btn-reset');
 if (resetBtn) {
   resetBtn.addEventListener('click', () => {
@@ -243,8 +263,17 @@ if (exportBtn) {
 window.addEventListener('keydown', e => {
   if (e.code === 'Backquote') renderer.debug = !renderer.debug;
   if (e.code === 'KeyP') player.state = player.state === 'super' ? 'small' : 'super';
-  // Enter/Space on character select screen = start game
-  if (!gameStarted && (e.code === 'Enter' || e.code === 'Space')) startGame();
+  // Character select: Enter/Space/Z = start; left/right = cycle
+  if (!gameStarted) {
+    if (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyZ') startGame();
+    if (e.code === 'ArrowLeft'  || e.code === 'KeyA') cycleChar(-1);
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') cycleChar(1);
+  }
+  // Level clear: Enter/Space/Z = play again
+  if (levelClear && levelClearTimer > 30 &&
+      (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyZ')) {
+    window.location.reload();
+  }
 });
 
 // ── Game loop ─────────────────────────────────────────────────────────────────
@@ -257,6 +286,23 @@ function loop(now) {
   lastTime = now;
 
   input.poll();
+
+  // ── Overlay input handling ────────────────────────────────────────────────
+  if (!gameStarted) {
+    // D-pad left/right cycles character (edge detection — fires once per press)
+    if (input.state.left  && !prevLeft)  cycleChar(-1);
+    if (input.state.right && !prevRight) cycleChar(1);
+    // Jump button (A) = PLAY!
+    if (input.state.jumpPressed) startGame();
+  }
+  prevLeft  = input.state.left;
+  prevRight = input.state.right;
+
+  if (levelClear) {
+    levelClearTimer += dt;
+    // Jump button (A) = Play Again, with brief lockout to avoid accidental trigger
+    if (levelClearTimer > 30 && input.state.jumpPressed) window.location.reload();
+  }
 
   if (editor.active) {
     editor.update(camera);
@@ -307,7 +353,11 @@ function loop(now) {
         if (!coinPops[i].alive) coinPops.splice(i, 1);
       }
     } else {
-      if (player.deathTimer > 90) window.location.reload();
+      // Jump to skip the rest of the death animation; hard cutoff at 65 frames (~1s)
+      if (player.deathTimer > 65 ||
+          (player.deathTimer > 30 && input.state.jumpPressed)) {
+        window.location.reload();
+      }
     }
 
     for (let i = particles.length - 1; i >= 0; i--) {
