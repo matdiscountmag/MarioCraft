@@ -80,7 +80,8 @@ export function createLevel(overrides = {}) {
     spawn:    { x: 2, y: 45 },
     tiles:    buildDefaultLevel(),
     entities: [
-      { type: 'stomper', x: 240, y: 720 },  // y = row 45 * 16
+      { type: 'walker', x: 240, y: 720 },   // col 15, row 45 — early walker
+      { type: 'walker', x: 688, y: 720 },   // col 43, y=row 45 — past the gap
     ],
     ...overrides,
   };

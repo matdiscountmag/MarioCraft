@@ -3,16 +3,18 @@
 import { TILE_SIZE, LEVEL_COLS, LEVEL_ROWS, setTile, getTile, saveLevel } from './level.js';
 import {
   drawSprite,
-  TILE_GROUND_TOP, TILE_GROUND, TILE_HARD, TILE_BRICK, TILE_QBLOCK, TILE_COIN, TILE_GOAL,
+  TILE_GROUND_TOP, TILE_GROUND, TILE_HARD, TILE_BRICK,
+  TILE_QBLOCK, TILE_COIN, TILE_GOAL, WALKER_1,
 } from './sprites.js';
 import { VIEWPORT_W, VIEWPORT_H } from './renderer.js';
 
 const PALETTE_W  = 32;
 const PALETTE_X  = VIEWPORT_W - PALETTE_W;
-const SLOT_COUNT = 9;
+const SLOT_COUNT = 10;
 const SLOT_H     = Math.floor(VIEWPORT_H / SLOT_COUNT);
 const SKY_LIMIT_ROW = 2;
 
+// isEntity=true items place/remove entries in levelData.entities instead of tiles.
 const PALETTE_ITEMS = [
   { id: 'erase',      label: 'X',  bg: '#551111' },
   { id: 'ground_top', sprite: TILE_GROUND_TOP },
@@ -23,9 +25,13 @@ const PALETTE_ITEMS = [
   { id: 'coin',       sprite: TILE_COIN },
   { id: 'pipe',       label: 'P',  bg: '#004400' },
   { id: 'goal',       sprite: TILE_GOAL },
+  { id: 'walker',     sprite: WALKER_1, isEntity: true },
 ];
 
 export function createEditor(canvas, levelData) {
+  // Ensure entities array exists (defensive guard for old saved levels)
+  if (!Array.isArray(levelData.entities)) levelData.entities = [];
+
   let active       = false;
   let selectedSlot = 0;
   const _cam = { x: 0, y: 0 };
@@ -43,6 +49,13 @@ export function createEditor(canvas, levelData) {
     };
   }
 
+  // Find entity index at a given tile cell (-1 if none).
+  function entityAt(col, row) {
+    return levelData.entities.findIndex(e =>
+      Math.floor(e.x / TILE_SIZE) === col && Math.floor(e.y / TILE_SIZE) === row
+    );
+  }
+
   function handleTap(clientX, clientY) {
     const { cx, cy } = clientToCanvas(clientX, clientY);
     if (cx >= PALETTE_X) {
@@ -54,11 +67,22 @@ export function createEditor(canvas, levelData) {
     const row = Math.floor((cy + _cam.y) / TILE_SIZE);
     if (row < SKY_LIMIT_ROW || row >= LEVEL_ROWS) return;
     if (col < 0 || col >= LEVEL_COLS) return;
+
     const item = PALETTE_ITEMS[selectedSlot];
+
     if (item.id === 'erase') {
       eraseTile(col, row);
     } else if (item.id === 'pipe') {
       placePipe(col, row);
+    } else if (item.isEntity) {
+      // Toggle entity at this cell
+      const idx = entityAt(col, row);
+      if (idx >= 0) {
+        levelData.entities.splice(idx, 1);
+      } else {
+        levelData.entities.push({ type: item.id, x: col * TILE_SIZE, y: row * TILE_SIZE });
+      }
+      saveLevel(levelData);
     } else {
       setTile(levelData, col, row, item.id);
       saveLevel(levelData);
@@ -66,12 +90,16 @@ export function createEditor(canvas, levelData) {
   }
 
   function eraseTile(col, row) {
+    // Remove compound pipe tiles
     const t = getTile(levelData, col, row);
     if      (t === 'pipe_tl') { setTile(levelData, col+1, row, null); setTile(levelData, col, row+1, null); setTile(levelData, col+1, row+1, null); }
     else if (t === 'pipe_tr') { setTile(levelData, col-1, row, null); setTile(levelData, col, row+1, null); setTile(levelData, col-1, row+1, null); }
     else if (t === 'pipe_sl') { setTile(levelData, col+1, row, null); }
     else if (t === 'pipe_sr') { setTile(levelData, col-1, row, null); }
     setTile(levelData, col, row, null);
+    // Also remove any entity at this cell
+    const idx = entityAt(col, row);
+    if (idx >= 0) levelData.entities.splice(idx, 1);
     saveLevel(levelData);
   }
 
@@ -157,6 +185,19 @@ export function createEditor(canvas, levelData) {
 
     draw(ctx, camera) {
       if (!active) return;
+
+      // Entity sprites (walkers) in the play area
+      for (const ent of levelData.entities) {
+        if (ent.type !== 'walker') continue;
+        const sx = Math.round(ent.x - camera.x);
+        const sy = Math.round(ent.y - camera.y);
+        if (sx < -16 || sx >= PALETTE_X || sy < -16 || sy > VIEWPORT_H) continue;
+        drawSprite(ctx, WALKER_1, sx, sy);
+        // Teal highlight border so walkers are obvious in edit mode
+        ctx.strokeStyle = 'rgba(0,220,220,0.7)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(sx + 0.5, sy + 0.5, 15, 15);
+      }
 
       // Palette background
       ctx.fillStyle = 'rgba(0,0,0,0.78)';

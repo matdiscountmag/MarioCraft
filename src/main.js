@@ -1,11 +1,12 @@
 // main.js - Bootstrap + game loop.
 
-import { createInput }   from './input.js?v=39';
+import { createInput }   from './input.js?v=40';
 import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=39';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=40';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=39';
+import { createPlayer }  from './entities/player.js?v=40';
+import { createWalker }  from './entities/walker.js?v=40';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
 
@@ -19,7 +20,11 @@ const level    = loadLevel();
 const editor   = createEditor(canvas, level);
 const player   = createPlayer(level.spawn.x, level.spawn.y);
 
-const entities           = [];
+// Build live walker entities from level data (treat legacy 'stomper' type as walker too)
+const entities = (level.entities || [])
+  .filter(e => e.type === 'walker' || e.type === 'stomper')
+  .map(e => createWalker(e.x, e.y));
+
 const LEVEL_PIXEL_WIDTH  = LEVEL_COLS * TILE_SIZE;
 const LEVEL_PIXEL_HEIGHT = LEVEL_ROWS * TILE_SIZE;
 
@@ -58,6 +63,33 @@ const world = {
     if (level.tiles[row]?.[col] === 'qblock') activateQBlock(col, row);
   },
 };
+
+// ── Player ↔ Walker collision ─────────────────────────────────────────────────
+
+function resolvePlayerWalker(walker) {
+  if (!walker.alive || player.dead || player.invulnTimer > 0) return;
+
+  // AABB overlap
+  if (player.x + player.w <= walker.x || player.x >= walker.x + walker.w) return;
+  if (player.y + player.h <= walker.y || player.y >= walker.y + walker.h) return;
+
+  // Stomp: player is falling and feet are in the top 60% of the walker
+  if (player.vy > 0 && (player.y + player.h) < (walker.y + walker.h * 0.6)) {
+    walker.alive = false;
+    player.vy = -5.0;  // satisfying bounce
+    return;
+  }
+
+  // Side hit — damage player
+  if (player.state === 'super') {
+    player.state      = 'small';
+    player.invulnTimer = 90;
+  } else {
+    // Small Nicky — die
+    player.dead = true;
+    player.vy   = -3.0;
+  }
+}
 
 // ── Level Clear overlay ───────────────────────────────────────────────────────
 
@@ -176,7 +208,14 @@ function loop(now) {
         }
       }
 
-      // Items (mushrooms, coin pops)
+      // Walker entities — update + player interaction
+      for (let i = entities.length - 1; i >= 0; i--) {
+        entities[i].update(dt, level);
+        resolvePlayerWalker(entities[i]);
+        if (!entities[i].alive) entities.splice(i, 1);
+      }
+
+      // Mushrooms + coin pops
       for (let i = items.length - 1; i >= 0; i--) {
         const item = items[i];
         item.update(dt, level);
@@ -195,7 +234,7 @@ function loop(now) {
         if (!coinPops[i].alive) coinPops.splice(i, 1);
       }
     } else {
-      // Player is dead — wait for animation to finish then reload
+      // Player dead — wait for fall+fade animation then reload
       if (player.deathTimer > 90) window.location.reload();
     }
 

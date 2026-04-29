@@ -276,6 +276,48 @@ export function drawSprite(ctx, sprite, px, py, flipX = false) {
   }
 }
 
+// ── Walker enemy (dome-headed shuffler) ──────────────────────────────────────
+// Two walk frames. Color key: K=black outline, e=tan light, E=brown dark, W=white eyes.
+// Flip horizontally (drawSprite flipX) when facing right.
+
+export const WALKER_1 = [
+  '................',
+  '....KKKKKKKK....',
+  '...KeeeeeeeeK...',
+  '..KeeeeeeeeeeK..',
+  '..KeeeeeeeeeeK..',
+  '..KeeWWeeWWeeK..',  // eyes: W=white sclera
+  '..KeeKKeeKKeeK..',  // pupils: K=black
+  '..KeeeeeeeeeeK..',
+  '..KEEEEEEEEEEK..',  // belly: E=darker brown
+  '..KEEEEEEEEEEK..',
+  '..KKKKEEEEKKKK..',  // foot junction
+  '...KEEK..KEEK...',  // feet together
+  '...KEEK..KEEK...',
+  '...KKKK..KKKK...',
+  '................',
+  '................',
+];
+
+export const WALKER_2 = [
+  '................',
+  '....KKKKKKKK....',
+  '...KeeeeeeeeK...',
+  '..KeeeeeeeeeeK..',
+  '..KeeeeeeeeeeK..',
+  '..KeeWWeeWWeeK..',
+  '..KeeKKeeKKeeK..',
+  '..KeeeeeeeeeeK..',
+  '..KEEEEEEEEEEK..',
+  '..KEEEEEEEEEEK..',
+  '..KKKKEEEEKKKK..',
+  '..KEEK....KEEK..',  // feet spread wider (walk step)
+  '..KEEK....KEEK..',
+  '..KKKK....KKKK..',
+  '................',
+  '................',
+];
+
 // -- Items --
 
 // Mushroom powerup: red domed cap with white spots, white stem, two feet.
