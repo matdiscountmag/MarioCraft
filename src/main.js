@@ -255,7 +255,7 @@ if (charBtn) {
 const resetBtn = document.getElementById('btn-reset');
 if (resetBtn) {
   resetBtn.addEventListener('click', () => {
-    if (!confirm('Reset level to default? This cannot be undone.')) return;
+    if (!confirm('Clear all map edits and restore the default level? This cannot be undone.')) return;
     localStorage.removeItem('mario-tablet:level:custom');
     window.location.reload();
   });
