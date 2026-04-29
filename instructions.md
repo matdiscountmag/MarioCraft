@@ -39,7 +39,7 @@ What we **do** instead:
   - Shell enemy: a turtle-like creature whose shell becomes a kickable projectile.
   - Plant enemy: a toothed plant emerging from a pipe.
 - **Use generic object designs**: bricks, ?-blocks, coins, pipes, ground tiles. These are universal platformer vocabulary.
-- **Names in code and UI**: use the project's own names (`player`, `stomper`, `shellback`, `spikeplant`, `cannonball`) — never `mario`, `goomba`, `koopa`, etc.
+- **Names in code and UI**: use the project's own names (`player`, `walker`) — never `mario`, `goomba`, `koopa`, etc.
 
 If the user asks for something that crosses the line, push back politely and offer the original-design alternative. Don't just comply quietly.
 
@@ -47,15 +47,12 @@ If the user asks for something that crosses the line, push back politely and off
 
 ## 3. Player character
 
-**Name: Nicky.** A humanoid hero with a pink cap and purple overalls. Three power states.
+**Name: Nicky.** A humanoid hero with a pink cap and purple overalls. Two active power states (Tailed removed from scope).
 
 | State | Sprite size | Abilities |
 |---|---|---|
 | Small | 16×16 | Walk, run, jump. 1 hit = die. |
 | Super | 16×32 | Above + break bricks from below + 1 extra hit before reverting to Small. |
-| Tailed | 16×32 | Above + spin attack (B in air or while not running). |
-
-(Naming note: "Tailed" is our equivalent of the SMB3 raccoon form. Visual: original ears + tail design, distinct from Nintendo's specific raccoon suit. No flight / P-meter — deferred to post-Phase-8.)
 
 ### Physics constants (tuned — these are the live values, do not revert)
 
@@ -94,11 +91,9 @@ A-press fires the base impulse. While A is held (up to ~12 frames), apply small 
 
 | Project name | Size | Behavior |
 |---|---|---|
-| Stomper | 16×16 | Walks, reverses at walls. Stomp = defeat. Side touch = damage. |
-| Shellback green | 16×24 | Walks, walks off ledges. Stomp = becomes shell. Touching shell kicks it; shell slides until wall, kills enemies in path. Re-stomp shell to stop. |
-| Shellback red | 16×24 | Like green but won't walk off ledges. |
-| Spikeplant | 16×24 | Emerges from a pipe top on a timer. Cannot be stomped. Pauses while player is on the pipe. |
-| Cannonball | 16×16 | Spawned from off-screen launcher tiles. Flies horizontally. Stompable. |
+| Walker | 16×16 | Walks, reverses at walls. Stomp = defeat. Side touch = damage. |
+
+Other enemy types (Shellback, Spikeplant, Cannonball) removed from scope — see §12 for possible future additions.
 
 ---
 
@@ -109,15 +104,14 @@ Editor palette items. All snap to the 16×16 grid.
 - **Ground** (textured top + filler row beneath)
 - **Hard block** (gray, indestructible — for stairs)
 - **Brick** (orange brick, breakable when Super hits from below)
-- **? Block** (yellow with bouncing ?, contents set in editor: coin / mushroom / tail)
+- **? Block** (yellow with bouncing ?, contents: coin or mushroom — random at runtime)
 - **Used block** (gray flat, what brick/? becomes after empty)
 - **Coin** (collectible)
-- **Pipe top** (32×16) and **pipe shaft** (32×16) — decorative in v1
-- **Goal post** (end-of-level)
+- **Pipe top** (32×16) and **pipe shaft** (32×16) — decorative
+- **Goal post** (end-of-level, triggers Level Clear)
 - **Powerup: Mushroom** (Small → Super)
-- **Powerup: Tail** (Super → Tailed)
 - **Spawn marker** (where player starts; exactly one per level)
-- Placeable enemies: Stomper, Shellback green/red, Spikeplant, Cannonball
+- Placeable enemies: Walker
 
 ---
 
@@ -154,7 +148,7 @@ Mushroom red:      #D03010    # R in sprite palettes
 Mushroom red dk:   #881800    # r in sprite palettes
 ```
 
-Nicky's color scheme: pink cap + highlights (N=#F878B8), dark pink shading (n=#A02060), purple outfit (V=#7840C8), skin (Z=#FCB89C), dark brown shoes (H=#883800). These are the intended final colors. **Current small Nicky sprites use placeholder colors** (brick-red cap/shoes B=#C84800, peach skin Z=#FCB89C, black outline K) — pending a full color pass.
+Nicky's sprite colors: brick-red cap/shoes (B=#C84800), peach skin (Z=#FCB89C), black outline (K). These placeholder colors are now final — no color pass planned. The N/n/V entries remain in the palette for potential use by other characters added in Phase 9.
 
 ---
 
@@ -182,10 +176,8 @@ MarioCraft/                 # repo root (local only)
 │   │   ├── audio.js        # SFX (later)
 │   │   └── entities/
 │   │       ├── player.js
-│   │       ├── stomper.js
-│   │       ├── shellback.js
-│   │       ├── spikeplant.js
-│   │       └── cannonball.js
+│   │       └── walker.js          # Phase 8 — the one enemy type
+│   │       # stomper.js, shellback.js, spikeplant.js, cannonball.js exist as stubs — not built out
 │   └── levels/
 │       └── default.json    # built-in level
 ├── backup/                 # snapshot before a major phase — do not upload
@@ -219,7 +211,7 @@ Sprites are arrays of equal-length strings, 1 char = 1 game pixel. `drawSprite(c
 
 Render: iterate rows × cols, fill 1×1 rect at game-pixel coords, scale via canvas size + `imageRendering: pixelated`. Flip horizontally by reversing column order at draw time (don't store mirrored copies).
 
-**Animation**: 2-frame walk cycle alternates between `PLAYER_SMALL_WALK1_R` (arms out) and `PLAYER_SMALL_STAND_R` (arms at sides). Cycle based on horizontal speed (`walkTimer += |vx| * dt`; flip frame when timer exceeds **3** — tuned for feel, do not revert). Speed-dependent: naturally faster when running. Spin attack = 4 fast frames (not yet implemented).
+**Animation**: 2-frame walk cycle alternates between `PLAYER_SMALL_WALK1_R` (arms out) and `PLAYER_SMALL_STAND_R` (arms at sides). Cycle based on horizontal speed (`walkTimer += |vx| * dt`; flip frame when timer exceeds **3** — tuned for feel, do not revert). Speed-dependent: naturally faster when running.
 
 ### CSV → sprite array workflow
 
@@ -324,7 +316,7 @@ HUD has Play/Edit toggle (button label flips: "Edit" in play mode, "Play" in edi
 - Reset button (HUD) → clears localStorage and reloads page (with confirm)
 - Export button (HUD) → downloads `level.json`
 
-**? block contents**: random at runtime — 70% coin pop, 30% mushroom. No in-editor picker. Entities (stompers, etc.) not yet placeable — deferred to Phase 8.
+**? block contents**: random at runtime — 70% coin pop, 30% mushroom. No in-editor picker. Walker enemy placeable in Phase 8.
 
 **Level data shape:**
 
@@ -351,9 +343,17 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 - **Phase 3 — Touch controls** ✅: D-pad + A/B virtual buttons. Hit targets ≥64px. `touch-action: none` on controls. Test on iPad. (`setVirtualKey()` already scaffolded in `input.js`.)
 - **Phase 4 — Environment physics** ✅: Brick breaking (Super smashes, Small bonks), ? blocks spawn coin pop (+1 instant) or mushroom item, floating coins collectible on contact, mushroom emerges → slides → collected (Small→Super). New: src/items.js. Dev: P key toggles small/super.
 - **Phase 5 — Edit mode** ✅: Toggle, right-side palette strip, place/delete/pipe, drag-to-pan, auto-save, reset, JSON export. Level expanded to 96×48, vertical camera scroll added.
-- **Phase 6 — Graphics overhaul** ✅: Background decorations, improved tiles (ground, brick, used block), Small Nicky stand/walk/jump sprites from CSV art, walk animation. **Deferred to Phase 8**: Nicky color pass (placeholder K/B/Z → proper N/V/H palette), Super Nicky sprites, enemy sprites.
-- **Phase 7 — Polish**: Coin counter, lives, win condition (goal post), death/respawn animation, game over screen.
-- **Phase 8 — Enemies & Tail**: Stomper AI, Shellback green/red, Spikeplant, Cannonball. Tail powerup (Super→Tailed, spin attack — no flight, no P-meter). SFX.
+- **Phase 6 — Graphics overhaul** ✅: Background decorations, improved tiles (ground, brick, used block), Small Nicky stand/walk/jump sprites from CSV art, walk animation. **Deferred to Phase 10**: Super Nicky sprites. Nicky color pass removed from scope — placeholder colors are final.
+- **Phase 7 — Finish line**: Goal post tile placeable in editor. Touching it shows "Level Clear!" message and pauses play. Death animation (brief fall + fade) when player takes a fatal hit, then respawn at spawn marker. No lives, no game over screen.
+- **Phase 8 — Enemy**: Single walker enemy (goomba-style dome-head, original sprite). Walks, reverses at walls, stomp = defeat, side touch = damage. Placeable in edit mode via palette strip.
+- **Phase 9 — Character selector**: Simple character select screen shown before play. Player picks a character, hits Play. Each character defined by CSV sprite uploads (same workflow as current Nicky sprites — user provides CSV, agent converts to JS). Pink Nicky (correct palette) is the first new character added this way.
+- **Phase 10 — Graphics refinement + SFX**: Super Nicky sprites, SFX via Web Audio API (no library, ~80 lines in audio.js — jump, coin collect, block hit, death tones).
+
+### Removed from scope (may revisit)
+- Lives counter and game over screen
+- Shellback, Spikeplant, Cannonball enemies
+- Tailed powerup (spin attack, no flight)
+- Multiple enemy types beyond one walker
 
 When a phase ships: tick its box in `README.md` Status, append to §16 Decisions log here, and tell the user it's ready to upload to GitHub Pages. Bump the cache-bust `?v=` number on script/style tags in `index.html`.
 
@@ -408,7 +408,7 @@ Safari caches aggressively, and the upload-and-wait loop is already slow — sta
 - Tap delay: `touch-action: manipulation` on buttons
 - Highlight on tap: `-webkit-tap-highlight-color: transparent`
 - Rubber-band scroll: `body { overscroll-behavior: none; overflow: hidden; touch-action: none; }`
-- Audio autoplay: `Tone.start()` only inside a user-gesture handler (first tap)
+- Audio autoplay: Web Audio API `AudioContext` must be created or resumed inside a user-gesture handler (first tap)
 - `localStorage` disabled in Private Browsing — detect and degrade
 - Safe areas: pad controls overlay with `env(safe-area-inset-bottom)`
 - Web can't truly lock orientation. Detect portrait → show "rotate to landscape" overlay
@@ -420,7 +420,7 @@ Safari caches aggressively, and the upload-and-wait loop is already slow — sta
 1. **Read this file at the start of every session.** Sessions are intentionally short — this file is what carries context.
 2. **Back up before a new phase.** At the start of any session that begins a new phase, copy the current `prod/` folder into `backup/` (overwrite) before touching any files. Remind the user to do this if they haven't.
 3. **No build tools.** Plain HTML+JS+CSS. ES modules are fine.
-3. **No external CDN deps in core gameplay.** Audio library is the lone exception (when added) with local fallback.
+4. **No external CDN deps in core gameplay.** SFX will use the built-in Web Audio API — no library needed.
 4. **Keep modules small.** Past ~300 lines usually means split.
 5. **Don't delete files unless asked.** Refactor by adding alongside.
 6. **Each phase ends in a runnable state, ready to upload.** If something's half-done, mark `// TODO:` rather than leave broken code.
@@ -450,6 +450,8 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-27** — Physics ground probe snap fix: probe now snaps `y = probeRow * TILE_SIZE - h` and zeros `vy` in addition to setting `onGround=true`. Without this, sub-pixel gravity drift caused 1px vertical flicker during standing. Walk animation: switched to alternating `WALK1_R` ↔ `STAND_R` (was both frames identical, causing sliding look). Walk timer threshold tuned from 20 → 4 for correct feel; do not revert. Cache bust at v=32.
 - **2026-04-27** — Phase 6 shipped. Remaining art (Nicky color pass, Super Nicky sprites, enemy sprites) deferred to Phase 8 (final art pass).
 - **2026-04-27** — Phase 7 started. Coin counter added as DOM element in #hud (not canvas — canvas text is always fuzzy at 256×224 resolution). #hud background removed (was dark bar covering gameplay). Mobile B button changed to tap-to-toggle run (keyboard hold unchanged). Walk animation threshold tuned to 3. Version strings added to input.js and renderer.js imports (were missing). Cache bust at v=38. Completed: background decorations (clouds/hills/bushes) world-positioned at wy≈562–736 so they're visible during play (camera.y≈544); draw order sky→hills→bushes→clouds→tiles. Ground tile improved with dark green shadow + tan separator row. Brick tile redesigned with black mortar grid (upper/lower offset bricks). Used block redesigned with black border (matching ? block family) + gray interior. Mushroom sprite added (new R/r palette entries). Small Nicky standing sprite replaced with pixel-perfect CSV-derived art (K/B/Z placeholder colors; intended pink/purple pending color pass). Walk frame added (arms-out pose from CSV, 1px bob). Bug fixed: canvas `arc(..., Math.PI, 0, true)` draws bottom half (downward), not top — all background arcs changed to `false`. ES module cache-busting rule established: bump version in import statements too, not just index.html. Cache bust at v=18.
+- **2026-04-29** — Phase plan finalized. Removed from scope: lives, game over screen, Shellback/Spikeplant/Cannonball enemies, Tailed powerup, Nicky color pass (placeholder colors now permanent). Final phase order: 7 = finish line (goal post, Level Clear, death + respawn); 8 = walker enemy (single dome-head type, stomp mechanic, editor-placeable); 9 = character selector (simple pick screen before play, each character added via CSV upload per session); 10 = Super Nicky sprites + SFX (Web Audio API, no library). "May revisit" items recorded in §12.
+- **2026-04-29** — Phase 7 shipped. Goal tile added (checkerboard yellow/white, 16×16). Touching it shows "LEVEL CLEAR!" DOM overlay (NES gold border, coin count, Play Again button). Death: fall off world bottom triggers dead flag — player falls and fades to transparent over 60 frames, then window.location.reload() (no respawn, no lives). Editor palette expanded to 9 slots (goal added as slot 9). Goal post placed at [45][92] in default level. Cache bust at v=39.
 
 ---
 
@@ -474,7 +476,9 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 3 — Touch controls
 - [x] Phase 4 — Environment physics (brick breaking, ? blocks, coins, Mushroom → Super)
 - [x] Phase 5 — Edit mode
-- [ ] Phase 6 — Graphics overhaul
-- [ ] Phase 7 — Polish
-- [ ] Phase 8 — Enemies & Tail
+- [x] Phase 6 — Graphics overhaul (backgrounds, improved tiles, Small Nicky sprites)
+- [ ] Phase 7 — Finish line (goal post, Level Clear, death animation + respawn)
+- [ ] Phase 8 — Enemy (walker, stomp mechanic, editor-placeable)
+- [ ] Phase 9 — Character selector (pick screen, CSV sprite uploads)
+- [ ] Phase 10 — Graphics refinement + SFX (Super Nicky sprites, Web Audio API sounds)
 ```

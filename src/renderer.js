@@ -4,7 +4,7 @@ import { TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
 import {
   drawSprite,
   TILE_GROUND, TILE_GROUND_TOP, TILE_HARD, TILE_BRICK,
-  TILE_QBLOCK, TILE_USED, TILE_COIN,
+  TILE_QBLOCK, TILE_USED, TILE_COIN, TILE_GOAL,
   TILE_PIPE_TL, TILE_PIPE_TR, TILE_PIPE_SL, TILE_PIPE_SR,
   PALETTE,
 } from './sprites.js';
@@ -20,6 +20,7 @@ const TILE_SPRITES = {
   qblock:     TILE_QBLOCK,
   used:       TILE_USED,
   coin:       TILE_COIN,
+  goal:       TILE_GOAL,
   pipe_tl:    TILE_PIPE_TL,
   pipe_tr:    TILE_PIPE_TR,
   pipe_sl:    TILE_PIPE_SL,

@@ -157,6 +157,27 @@ export const TILE_COIN = [
   '................',
 ];
 
+// ── Goal tile (finish line — checkerboard yellow/white) ───────────────────────
+
+export const TILE_GOAL = [
+  'KKKKKKKKKKKKKKKK',
+  'KYYWWYYWWYYWWYYK',
+  'KYYWWYYWWYYWWYYK',
+  'KWWYYWWYYWWYYWWK',
+  'KWWYYWWYYWWYYWWK',
+  'KYYWWYYWWYYWWYYK',
+  'KYYWWYYWWYYWWYYK',
+  'KWWYYWWYYWWYYWWK',
+  'KWWYYWWYYWWYYWWK',
+  'KYYWWYYWWYYWWYYK',
+  'KYYWWYYWWYYWWYYK',
+  'KWWYYWWYYWWYYWWK',
+  'KWWYYWWYYWWYYWWK',
+  'KYYWWYYWWYYWWYYK',
+  'KYYWWYYWWYYWWYYK',
+  'KKKKKKKKKKKKKKKK',
+];
+
 // ── Pipes ────────────────────────────────────────────────────────────────────
 
 export const TILE_PIPE_TL = [

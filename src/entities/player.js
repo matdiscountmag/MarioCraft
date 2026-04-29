@@ -1,10 +1,10 @@
 // player.js — Nicky, the pink hero. SMB3-style physics.
-import { resolveEntity } from '../physics.js?v=37';
-import { drawSprite } from '../sprites.js?v=28';
+import { resolveEntity } from '../physics.js?v=39';
+import { drawSprite } from '../sprites.js?v=39';
 import {
   PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R,
   PLAYER_SMALL_WALK2_R, PLAYER_SMALL_JUMP_R,
-} from '../player-sprites.js?v=28';
+} from '../player-sprites.js?v=39';
 
 const PHYS = {
   gravity: 0.45, maxFall: 7.0,
@@ -35,9 +35,19 @@ export function createPlayer(spawnCol, spawnRow) {
     walkFrame: 0, walkTimer: 0,
     airTimer: 0,
     invulnTimer: 0,
+    dead: false, deathTimer: 0, deathAlpha: 1.0,
 
     // world: optional callbacks { breakBrick(col,row), bumpBlock(col,row) }
     update(dt, input, levelData, world) {
+      // Death animation — fall + fade, bypass all normal logic
+      if (this.dead) {
+        this.vy = Math.min(this.vy + PHYS.gravity * dt, PHYS.maxFall);
+        this.y += this.vy * dt;
+        this.deathTimer += dt;
+        this.deathAlpha = Math.max(0, 1 - this.deathTimer / 60);
+        return;
+      }
+
       const isRunning = input.run;
       const maxSpeed  = isRunning ? PHYS.runMaxSpeed  : PHYS.walkMaxSpeed;
       const accel     = isRunning ? PHYS.runAccel     : PHYS.walkAccel;
@@ -128,11 +138,11 @@ export function createPlayer(spawnCol, spawnRow) {
       // World left boundary
       if (this.x < 0) { this.x = 0; this.vx = 0; }
 
-      // Fell out of world — respawn
-      if (this.y > levelData.height * 16 + 32) {
-        this.x = levelData.spawn.x * 16;
-        this.y = levelData.spawn.y * 16;
-        this.vx = 0; this.vy = 0;
+      // Fell out of world — trigger death animation
+      if (this.y > levelData.height * 16) {
+        this.dead = true;
+        this.vx = 0;
+        return;
       }
 
       // Air timer — only show jump sprite after 4 frames off the ground
@@ -152,7 +162,7 @@ export function createPlayer(spawnCol, spawnRow) {
       const sx = Math.round(this.x - camera.x);
       let sy = Math.round(this.y - camera.y);
       let sprite;
-      if (this.airTimer > 4) {
+      if (this.airTimer > 4 || this.dead) {
         sprite = PLAYER_SMALL_JUMP_R;
       } else if (Math.abs(this.vx) > 0.1) {
         sprite = this.walkFrame === 0 ? PLAYER_SMALL_WALK1_R : PLAYER_SMALL_STAND_R;
@@ -160,7 +170,9 @@ export function createPlayer(spawnCol, spawnRow) {
       } else {
         sprite = PLAYER_SMALL_STAND_R;
       }
+      if (this.dead) ctx.globalAlpha = this.deathAlpha;
       drawSprite(ctx, sprite, sx, sy, !this.facingRight);
+      if (this.dead) ctx.globalAlpha = 1;
     },
   };
 }

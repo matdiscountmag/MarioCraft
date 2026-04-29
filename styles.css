@@ -235,3 +235,63 @@ html, body {
   font-size: 48px;
   transform: rotate(90deg);
 }
+
+/* ── Level Clear overlay ──────────────────────────────────────────────────── */
+
+#level-clear-overlay {
+  display: none; /* shown via JS when goal is touched */
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 50;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#level-clear-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: #111;
+  border: 3px solid #F8B800;
+  border-radius: 8px;
+  padding: 32px 48px;
+}
+
+#level-clear-title {
+  font-family: monospace;
+  font-size: 36px;
+  font-weight: bold;
+  color: #F8B800;
+  letter-spacing: 3px;
+  text-shadow: 0 0 12px rgba(248,184,0,0.6);
+}
+
+#level-clear-coins {
+  font-family: monospace;
+  font-size: 20px;
+  color: #F8F8F8;
+  letter-spacing: 1px;
+}
+
+#btn-play-again {
+  margin-top: 8px;
+  background: #C84800;
+  color: #F8F8F8;
+  border: 2px solid #F8B800;
+  border-radius: 6px;
+  padding: 12px 32px;
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 1px;
+}
+
+#btn-play-again:active {
+  background: #A03800;
+}

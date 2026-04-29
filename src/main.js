@@ -1,11 +1,11 @@
 // main.js - Bootstrap + game loop.
 
-import { createInput }   from './input.js?v=37';
+import { createInput }   from './input.js?v=39';
 import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=37';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=39';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=37';
+import { createPlayer }  from './entities/player.js?v=39';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
 
@@ -28,6 +28,7 @@ const blockBumps = [];
 const items      = [];
 const coinPops   = [];
 let   coins      = 0;
+let   levelClear = false;
 
 function activateQBlock(col, row) {
   setTile(level, col, row, 'used');
@@ -58,6 +59,25 @@ const world = {
   },
 };
 
+// ── Level Clear overlay ───────────────────────────────────────────────────────
+
+const levelClearOverlay = document.getElementById('level-clear-overlay');
+const levelClearCoins   = document.getElementById('level-clear-coins');
+const btnPlayAgain      = document.getElementById('btn-play-again');
+
+if (btnPlayAgain) {
+  btnPlayAgain.addEventListener('click', () => window.location.reload());
+}
+
+function triggerLevelClear() {
+  if (levelClear) return;
+  levelClear = true;
+  if (levelClearCoins) levelClearCoins.textContent = `Coins: ${coins}`;
+  if (levelClearOverlay) levelClearOverlay.style.display = 'flex';
+}
+
+// ── Orientation ───────────────────────────────────────────────────────────────
+
 const rotateOverlay = document.getElementById('rotate-overlay');
 function checkOrientation() {
   if (!rotateOverlay) return;
@@ -65,6 +85,8 @@ function checkOrientation() {
 }
 window.addEventListener('resize', checkOrientation);
 checkOrientation();
+
+// ── Coin HUD ──────────────────────────────────────────────────────────────────
 
 const hudCoins     = document.getElementById('hud-coins');
 const hudCoinCount = document.getElementById('hud-coin-count');
@@ -74,6 +96,8 @@ function updateCoinDisplay() {
   shownCoins = coins;
   hudCoinCount.textContent = String(coins).padStart(2, '0');
 }
+
+// ── HUD button wiring ─────────────────────────────────────────────────────────
 
 const modeBtn = document.getElementById('btn-mode');
 if (modeBtn) {
@@ -115,6 +139,8 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyP') player.state = player.state === 'super' ? 'small' : 'super';
 });
 
+// ── Game loop ─────────────────────────────────────────────────────────────────
+
 let lastTime = null;
 
 function loop(now) {
@@ -126,7 +152,7 @@ function loop(now) {
 
   if (editor.active) {
     editor.update(camera);
-  } else {
+  } else if (!levelClear) {
     player.update(dt, input.state, level, world);
     updateCamera(
       camera,
@@ -136,32 +162,41 @@ function loop(now) {
       LEVEL_PIXEL_HEIGHT,
     );
 
-    const c0 = Math.floor(player.x / TILE_SIZE);
-    const c1 = Math.floor((player.x + player.w - 1) / TILE_SIZE);
-    const r0 = Math.floor(player.y / TILE_SIZE);
-    const r1 = Math.floor((player.y + player.h - 1) / TILE_SIZE);
-    for (let r = r0; r <= r1; r++) {
-      for (let c = c0; c <= c1; c++) {
-        if (getTile(level, c, r) === 'coin') { setTile(level, c, r, null); coins++; }
-      }
-    }
-
-    for (let i = items.length - 1; i >= 0; i--) {
-      const item = items[i];
-      item.update(dt, level);
-      if (!item.alive) { items.splice(i, 1); continue; }
-      if (!item.emerging && item.type === 'mushroom') {
-        if (player.x < item.x + item.w && player.x + player.w > item.x &&
-            player.y < item.y + item.h && player.y + player.h > item.y) {
-          if (player.state === 'small') player.state = 'super';
-          items.splice(i, 1);
+    if (!player.dead) {
+      // Tile interactions: coins and goal
+      const c0 = Math.floor(player.x / TILE_SIZE);
+      const c1 = Math.floor((player.x + player.w - 1) / TILE_SIZE);
+      const r0 = Math.floor(player.y / TILE_SIZE);
+      const r1 = Math.floor((player.y + player.h - 1) / TILE_SIZE);
+      for (let r = r0; r <= r1; r++) {
+        for (let c = c0; c <= c1; c++) {
+          const t = getTile(level, c, r);
+          if (t === 'coin') { setTile(level, c, r, null); coins++; }
+          if (t === 'goal') { triggerLevelClear(); }
         }
       }
-    }
 
-    for (let i = coinPops.length - 1; i >= 0; i--) {
-      coinPops[i].update(dt);
-      if (!coinPops[i].alive) coinPops.splice(i, 1);
+      // Items (mushrooms, coin pops)
+      for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        item.update(dt, level);
+        if (!item.alive) { items.splice(i, 1); continue; }
+        if (!item.emerging && item.type === 'mushroom') {
+          if (player.x < item.x + item.w && player.x + player.w > item.x &&
+              player.y < item.y + item.h && player.y + player.h > item.y) {
+            if (player.state === 'small') player.state = 'super';
+            items.splice(i, 1);
+          }
+        }
+      }
+
+      for (let i = coinPops.length - 1; i >= 0; i--) {
+        coinPops[i].update(dt);
+        if (!coinPops[i].alive) coinPops.splice(i, 1);
+      }
+    } else {
+      // Player is dead — wait for animation to finish then reload
+      if (player.deathTimer > 90) window.location.reload();
     }
 
     for (let i = particles.length - 1; i >= 0; i--) {

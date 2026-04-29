@@ -3,13 +3,13 @@
 import { TILE_SIZE, LEVEL_COLS, LEVEL_ROWS, setTile, getTile, saveLevel } from './level.js';
 import {
   drawSprite,
-  TILE_GROUND_TOP, TILE_GROUND, TILE_HARD, TILE_BRICK, TILE_QBLOCK, TILE_COIN,
+  TILE_GROUND_TOP, TILE_GROUND, TILE_HARD, TILE_BRICK, TILE_QBLOCK, TILE_COIN, TILE_GOAL,
 } from './sprites.js';
 import { VIEWPORT_W, VIEWPORT_H } from './renderer.js';
 
 const PALETTE_W  = 32;
 const PALETTE_X  = VIEWPORT_W - PALETTE_W;
-const SLOT_COUNT = 8;
+const SLOT_COUNT = 9;
 const SLOT_H     = Math.floor(VIEWPORT_H / SLOT_COUNT);
 const SKY_LIMIT_ROW = 2;
 
@@ -22,6 +22,7 @@ const PALETTE_ITEMS = [
   { id: 'qblock',     sprite: TILE_QBLOCK },
   { id: 'coin',       sprite: TILE_COIN },
   { id: 'pipe',       label: 'P',  bg: '#004400' },
+  { id: 'goal',       sprite: TILE_GOAL },
 ];
 
 export function createEditor(canvas, levelData) {

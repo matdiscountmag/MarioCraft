@@ -1,6 +1,6 @@
 // level.js — tile grid, save/load, helpers.
 // Tile IDs: 'ground_top' | 'ground' | 'hard' | 'brick' | 'qblock' | 'used'
-//           'coin' | 'pipe_tl' | 'pipe_tr' | 'pipe_sl' | 'pipe_sr'
+//           'coin' | 'goal' | 'pipe_tl' | 'pipe_tr' | 'pipe_sl' | 'pipe_sr'
 
 export const TILE_SIZE   = 16;
 export const LEVEL_COLS  = 96;
@@ -64,6 +64,9 @@ function buildDefaultLevel() {
   // ── Second platform — row 44, cols 79-85 ──
   for (let c = 79; c <= 85; c++) T[44][c] = 'hard';
   T[42][77] = 'qblock';
+
+  // ── Goal tile — col 92, row 45 (standing on the ground, just before the level end) ──
+  T[45][92] = 'goal';
 
   return T;
 }
