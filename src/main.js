@@ -263,11 +263,9 @@ if (exportBtn) {
 window.addEventListener('keydown', e => {
   if (e.code === 'Backquote') renderer.debug = !renderer.debug;
   if (e.code === 'KeyP') player.state = player.state === 'super' ? 'small' : 'super';
-  // Character select: Enter/Space/Z = start; left/right = cycle
-  if (!gameStarted) {
-    if (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyZ') startGame();
-    if (e.code === 'ArrowLeft'  || e.code === 'KeyA') cycleChar(-1);
-    if (e.code === 'ArrowRight' || e.code === 'KeyD') cycleChar(1);
+  // Character select: Enter/Space/Z = start (left/right handled in loop)
+  if (!gameStarted && (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyZ')) {
+    startGame();
   }
   // Level clear: Enter/Space/Z = play again
   if (levelClear && levelClearTimer > 30 &&
