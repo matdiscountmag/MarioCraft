@@ -295,3 +295,101 @@ html, body {
 #btn-play-again:active {
   background: #A03800;
 }
+
+/* ── Character Select overlay ─────────────────────────────────────────── */
+
+#char-select-overlay {
+  display: flex; /* visible by default; hidden via JS after PLAY! */
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 60;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#char-select-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: #111;
+  border: 3px solid #F8B800;
+  border-radius: 8px;
+  padding: 28px 40px;
+}
+
+#char-select-title {
+  font-family: monospace;
+  font-size: 22px;
+  font-weight: bold;
+  color: #F8B800;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(248,184,0,0.5);
+}
+
+#char-cards {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.char-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid #444;
+  border-radius: 6px;
+  background: #1a1a1a;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.1s, background 0.1s;
+}
+
+.char-card.selected {
+  border-color: #F8B800;
+  background: #2a2000;
+}
+
+.char-card:active {
+  background: #222;
+}
+
+.char-preview {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.char-name {
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: bold;
+  color: #F8F8F8;
+  letter-spacing: 1px;
+}
+
+#btn-char-play {
+  margin-top: 4px;
+  background: #C84800;
+  color: #F8F8F8;
+  border: 2px solid #F8B800;
+  border-radius: 6px;
+  padding: 12px 40px;
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 2px;
+}
+
+#btn-char-play:active {
+  background: #A03800;
+}

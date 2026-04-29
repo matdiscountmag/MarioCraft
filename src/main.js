@@ -1,14 +1,16 @@
 // main.js - Bootstrap + game loop.
 
-import { createInput }   from './input.js?v=41';
+import { createInput }   from './input.js?v=42';
 import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=41';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=42';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=41';
-import { createWalker }  from './entities/walker.js?v=41';
+import { createPlayer }  from './entities/player.js?v=42';
+import { createWalker }  from './entities/walker.js?v=42';
 import { PALETTE }       from './sprites.js';
+import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=42';
 import { createCoinPop, createMushroom } from './items.js';
+import { CHARACTERS } from './characters.js';
 
 const canvas = document.getElementById('game-canvas');
 const input  = createInput();
@@ -20,7 +22,7 @@ const level    = loadLevel();
 const editor   = createEditor(canvas, level);
 const player   = createPlayer(level.spawn.x, level.spawn.y);
 
-// Build live walker entities from level data (treat legacy 'stomper' type as walker too)
+// Build live walker entities from level data
 const entities = (level.entities || [])
   .filter(e => e.type === 'walker' || e.type === 'stomper')
   .map(e => createWalker(e.x, e.y));
@@ -33,7 +35,82 @@ const blockBumps = [];
 const items      = [];
 const coinPops   = [];
 let   coins      = 0;
-let   levelClear = false;
+let   levelClear  = false;
+let   gameStarted = false;
+
+// ── Character select ──────────────────────────────────────────────────────────
+
+const CHAR_KEY = 'mario-tablet:selected-char';
+let selectedCharId = localStorage.getItem(CHAR_KEY) || CHARACTERS[0].id;
+
+function drawCharPreview(previewCanvas, colors) {
+  previewCanvas.width  = 16;
+  previewCanvas.height = 16;
+  const ctx2 = previewCanvas.getContext('2d');
+  ctx2.clearRect(0, 0, 16, 16);
+  const sprite = PLAYER_SMALL_STAND_R;
+  for (let r = 0; r < sprite.length; r++) {
+    const row = sprite[r];
+    for (let c = 0; c < row.length; c++) {
+      const ch = row[c];
+      if (ch === '.' || !PALETTE[ch]) continue;
+      ctx2.fillStyle = (colors && colors[ch]) ? colors[ch] : PALETTE[ch];
+      ctx2.fillRect(c, r, 1, 1);
+    }
+  }
+}
+
+function buildCharCards() {
+  const container = document.getElementById('char-cards');
+  if (!container) return;
+  container.innerHTML = '';
+  for (const char of CHARACTERS) {
+    const card = document.createElement('div');
+    card.className = 'char-card' + (char.id === selectedCharId ? ' selected' : '');
+    card.dataset.id = char.id;
+
+    const preview = document.createElement('canvas');
+    preview.className = 'char-preview';
+    drawCharPreview(preview, char.colors);
+
+    const name = document.createElement('div');
+    name.className = 'char-name';
+    name.textContent = char.name;
+
+    card.appendChild(preview);
+    card.appendChild(name);
+
+    function selectCard() {
+      selectedCharId = char.id;
+      document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    }
+    card.addEventListener('click', selectCard);
+    card.addEventListener('touchend', e => { e.preventDefault(); selectCard(); });
+
+    container.appendChild(card);
+  }
+}
+
+const charSelectOverlay = document.getElementById('char-select-overlay');
+const btnCharPlay       = document.getElementById('btn-char-play');
+
+buildCharCards();
+
+if (btnCharPlay) {
+  btnCharPlay.addEventListener('click', startGame);
+  btnCharPlay.addEventListener('touchend', e => { e.preventDefault(); startGame(); });
+}
+
+function startGame() {
+  const char = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
+  player.colors = Object.keys(char.colors).length > 0 ? char.colors : null;
+  try { localStorage.setItem(CHAR_KEY, selectedCharId); } catch (e) {}
+  gameStarted = true;
+  if (charSelectOverlay) charSelectOverlay.style.display = 'none';
+}
+
+// ── World callbacks ───────────────────────────────────────────────────────────
 
 function activateQBlock(col, row) {
   setTile(level, col, row, 'used');
@@ -68,24 +145,21 @@ const world = {
 
 function resolvePlayerWalker(walker) {
   if (!walker.alive || player.dead || player.invulnTimer > 0) return;
-
-  // AABB overlap
   if (player.x + player.w <= walker.x || player.x >= walker.x + walker.w) return;
   if (player.y + player.h <= walker.y || player.y >= walker.y + walker.h) return;
 
-  // Stomp: player is falling and feet are in the top 60% of the walker
+  // Stomp: player falling, feet in top 60% of walker
   if (player.vy > 0 && (player.y + player.h) < (walker.y + walker.h * 0.6)) {
     walker.alive = false;
-    player.vy = -5.0;  // satisfying bounce
+    player.vy = -5.0;
     return;
   }
 
-  // Side hit — damage player
+  // Side hit
   if (player.state === 'super') {
-    player.state      = 'small';
+    player.state       = 'small';
     player.invulnTimer = 90;
   } else {
-    // Small Nicky — die
     player.dead = true;
     player.vy   = -3.0;
   }
@@ -169,6 +243,8 @@ if (exportBtn) {
 window.addEventListener('keydown', e => {
   if (e.code === 'Backquote') renderer.debug = !renderer.debug;
   if (e.code === 'KeyP') player.state = player.state === 'super' ? 'small' : 'super';
+  // Enter/Space on character select screen = start game
+  if (!gameStarted && (e.code === 'Enter' || e.code === 'Space')) startGame();
 });
 
 // ── Game loop ─────────────────────────────────────────────────────────────────
@@ -184,7 +260,7 @@ function loop(now) {
 
   if (editor.active) {
     editor.update(camera);
-  } else if (!levelClear) {
+  } else if (gameStarted && !levelClear) {
     player.update(dt, input.state, level, world);
     updateCamera(
       camera,
@@ -195,7 +271,6 @@ function loop(now) {
     );
 
     if (!player.dead) {
-      // Tile interactions: coins and goal
       const c0 = Math.floor(player.x / TILE_SIZE);
       const c1 = Math.floor((player.x + player.w - 1) / TILE_SIZE);
       const r0 = Math.floor(player.y / TILE_SIZE);
@@ -208,14 +283,12 @@ function loop(now) {
         }
       }
 
-      // Walker entities — update + player interaction
       for (let i = entities.length - 1; i >= 0; i--) {
         entities[i].update(dt, level);
         resolvePlayerWalker(entities[i]);
         if (!entities[i].alive) entities.splice(i, 1);
       }
 
-      // Mushrooms + coin pops
       for (let i = items.length - 1; i >= 0; i--) {
         const item = items[i];
         item.update(dt, level);
@@ -234,7 +307,6 @@ function loop(now) {
         if (!coinPops[i].alive) coinPops.splice(i, 1);
       }
     } else {
-      // Player dead — wait for fall+fade animation then reload
       if (player.deathTimer > 90) window.location.reload();
     }
 

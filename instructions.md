@@ -346,7 +346,7 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 - **Phase 6 — Graphics overhaul** ✅: Background decorations, improved tiles (ground, brick, used block), Small Nicky stand/walk/jump sprites from CSV art, walk animation. **Deferred to Phase 10**: Super Nicky sprites. Nicky color pass removed from scope — placeholder colors are final.
 - **Phase 7 — Finish line**: Goal post tile placeable in editor. Touching it shows "Level Clear!" message and pauses play. Death animation (brief fall + fade) when player takes a fatal hit, then respawn at spawn marker. No lives, no game over screen.
 - **Phase 8 — Enemy**: Single walker enemy (goomba-style dome-head, original sprite). Walks, reverses at walls, stomp = defeat, side touch = damage. Placeable in edit mode via palette strip.
-- **Phase 9 — Character selector**: Simple character select screen shown before play. Player picks a character, hits Play. Each character defined by CSV sprite uploads (same workflow as current Nicky sprites — user provides CSV, agent converts to JS). Pink Nicky (correct palette) is the first new character added this way.
+- **Phase 9 — Character selector**: Simple character select screen shown before play. Player picks a character, hits Play. Characters share the same sprite artwork — each is defined by a palette color override (a `colors` object mapping sprite palette keys to new hex values). No CSV upload needed per character. Nicky (default, no overrides) is always first; additional characters appended to `characters.js`. `drawSprite` accepts an optional `colors` parameter for per-draw overrides.
 - **Phase 10 — Graphics refinement + SFX**: Super Nicky sprites, SFX via Web Audio API (no library, ~80 lines in audio.js — jump, coin collect, block hit, death tones).
 
 ### Removed from scope (may revisit)
@@ -453,6 +453,7 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-29** — Phase plan finalized. Removed from scope: lives, game over screen, Shellback/Spikeplant/Cannonball enemies, Tailed powerup, Nicky color pass (placeholder colors now permanent). Final phase order: 7 = finish line (goal post, Level Clear, death + respawn); 8 = walker enemy (single dome-head type, stomp mechanic, editor-placeable); 9 = character selector (simple pick screen before play, each character added via CSV upload per session); 10 = Super Nicky sprites + SFX (Web Audio API, no library). "May revisit" items recorded in §12.
 - **2026-04-29** — Phase 8 shipped. Walker enemy: dome-headed original sprite (WALKER_1/WALKER_2 in sprites.js), two walk frames. Walks at 0.6px/frame, reverses at walls (vx zeroed by physics) and ledge edges (ground probe ahead). Stomp from above = defeat + 5px bounce; side contact = Small→die or Super→shrink+90 invuln frames. Editor: 10th palette slot (entity type), tap to place/remove walker, teal border highlight in edit mode, erase tool also removes entities. Two default walkers at col 15 and col 43. editor.js truncation bug fixed (file was cut mid-line since Phase 7). Cache bust at v=40.
 - **2026-04-29** — Phase 7 shipped. Goal tile added (checkerboard yellow/white, 16×16). Touching it shows "LEVEL CLEAR!" DOM overlay (NES gold border, coin count, Play Again button). Death: fall off world bottom triggers dead flag — player falls and fades to transparent over 60 frames, then window.location.reload() (no respawn, no lives). Editor palette expanded to 9 slots (goal added as slot 9). Goal post placed at [45][92] in default level. Cache bust at v=39.
+- **2026-04-29** — Phase 9 shipped. Character select screen shown on load before game starts. Characters share sprites; each defined by a `colors` palette override map in `characters.js`. `drawSprite` updated to accept optional `colors` arg (backward-compatible). player.js gets `colors: null` field set by `startGame()`. Two characters: Nicky (default palette) and Dex (B → deep blue). DOM overlay `#char-select-overlay` with dynamic cards built from CHARACTERS array; `drawCharPreview()` renders 16×16 sprite onto card canvas with color overrides, CSS-scaled to 64×64 pixelated. Selection persisted in localStorage. Enter/Space starts game from keyboard. Pink Nicky color correction requirement removed — Nicky's placeholder colors (B=#C84800 brick-red cap/shoes, Z=#FCB89C skin) are the final canonical colors. Cache bust at v=42.
 
 ---
 
@@ -480,6 +481,6 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 6 — Graphics overhaul (backgrounds, improved tiles, Small Nicky sprites)
 - [ ] Phase 7 — Finish line (goal post, Level Clear, death animation + respawn)
 - [ ] Phase 8 — Enemy (walker, stomp mechanic, editor-placeable)
-- [ ] Phase 9 — Character selector (pick screen, CSV sprite uploads)
+- [x] Phase 9 — Character selector (pick screen, palette-override characters)
 - [ ] Phase 10 — Graphics refinement + SFX (Super Nicky sprites, Web Audio API sounds)
 ```

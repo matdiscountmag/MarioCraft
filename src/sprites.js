@@ -261,8 +261,9 @@ export const TILE_PIPE_SR = [
 /**
  * Draw a sprite (string-array) at game-pixel coords (px, py).
  * flipX=true mirrors horizontally for left-facing characters.
+ * colors (optional) overrides specific palette entries, e.g. { B: '#3060D0' }.
  */
-export function drawSprite(ctx, sprite, px, py, flipX = false) {
+export function drawSprite(ctx, sprite, px, py, flipX = false, colors = null) {
   const rows = sprite.length;
   const cols = sprite[0].length;
   for (let r = 0; r < rows; r++) {
@@ -270,7 +271,7 @@ export function drawSprite(ctx, sprite, px, py, flipX = false) {
     for (let c = 0; c < cols; c++) {
       const ch = flipX ? row[cols - 1 - c] : row[c];
       if (ch === '.' || !PALETTE[ch]) continue;
-      ctx.fillStyle = PALETTE[ch];
+      ctx.fillStyle = (colors && colors[ch]) ? colors[ch] : PALETTE[ch];
       ctx.fillRect(px + c, py + r, 1, 1);
     }
   }

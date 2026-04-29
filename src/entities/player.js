@@ -36,6 +36,7 @@ export function createPlayer(spawnCol, spawnRow) {
     airTimer: 0,
     invulnTimer: 0,
     dead: false, deathTimer: 0, deathAlpha: 1.0,
+    colors: null,   // palette overrides set by character select (e.g. { B: '#3060D0' })
 
     // world: optional callbacks { breakBrick(col,row), bumpBlock(col,row) }
     update(dt, input, levelData, world) {
@@ -171,7 +172,7 @@ export function createPlayer(spawnCol, spawnRow) {
         sprite = PLAYER_SMALL_STAND_R;
       }
       if (this.dead) ctx.globalAlpha = this.deathAlpha;
-      drawSprite(ctx, sprite, sx, sy, !this.facingRight);
+      drawSprite(ctx, sprite, sx, sy, !this.facingRight, this.colors);
       if (this.dead) ctx.globalAlpha = 1;
     },
   };
