@@ -294,9 +294,9 @@ export const WALKER_1 = [
   '..KKKKEEEEKKKK..',  // foot junction
   '...KEEK..KEEK...',  // feet together
   '...KEEK..KEEK...',
-  '...KKKK..KKKK...',
-  '................',
-  '................',
+  '...KEEK..KEEK...',
+  '...KEKK..KEKK...',  // ankle detail
+  '...KKKK..KKKK...',  // sole — row 15, flush with ground
 ];
 
 export const WALKER_2 = [
@@ -313,9 +313,9 @@ export const WALKER_2 = [
   '..KKKKEEEEKKKK..',
   '..KEEK....KEEK..',  // feet spread wider (walk step)
   '..KEEK....KEEK..',
-  '..KKKK....KKKK..',
-  '................',
-  '................',
+  '..KEEK....KEEK..',
+  '..KEKK....KEKK..',  // ankle detail
+  '..KKKK....KKKK..',  // sole — row 15, flush with ground
 ];
 
 // -- Items --

@@ -1,12 +1,12 @@
 // main.js - Bootstrap + game loop.
 
-import { createInput }   from './input.js?v=40';
+import { createInput }   from './input.js?v=41';
 import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=40';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=41';
 import { createEditor }  from './editor.js';
 import { createAudio }   from './audio.js';
-import { createPlayer }  from './entities/player.js?v=40';
-import { createWalker }  from './entities/walker.js?v=40';
+import { createPlayer }  from './entities/player.js?v=41';
+import { createWalker }  from './entities/walker.js?v=41';
 import { PALETTE }       from './sprites.js';
 import { createCoinPop, createMushroom } from './items.js';
 
