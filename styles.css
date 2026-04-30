@@ -426,10 +426,11 @@ html, body {
   min-width: 340px;
 }
 
-/* Full-screen variant — pixel editor only */
+/* Full-screen variant — pixel editor only, capped to game canvas width */
 #ced-box.ced-fs {
   width: 100%; height: 100%;
-  max-width: none; max-height: none;
+  max-width: calc(100vh * (256 / 224));   /* matches game canvas letterbox */
+  max-height: none;
   border: none; border-radius: 0;
   padding: 0; gap: 0;
   overflow: hidden;
