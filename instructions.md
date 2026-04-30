@@ -367,11 +367,12 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 
   **New Character flow**: prompt for name → choose "From Scratch" (blank grid) or "From Template" (copy frames from any existing character, including built-ins).
 
-  **Pixel editor**:
+  **Pixel editor** (full-screen, capped to game canvas max-width):
   - 6 frame tabs: Small Stand, Small Walk, Small Jump, Super Stand, Super Walk, Super Jump
-  - Small frames: 16×16 grid. Super frames: 16×32 grid (stored but dormant until Super engine work in Phase 11)
-  - Full NES 54-color palette strip for painting (one click per cell — no drag-to-paint required)
-  - Real-time static preview of the current frame as you paint
+  - Small frames: 16×16 grid. Super frames: 16×32 grid (stored but dormant until Phase 13)
+  - Grid cell size: 28px (touch-friendly)
+  - Full NES 54-color palette in the right panel (one click per cell — no drag-to-paint required). No preview pane — palette gets the full right-panel space.
+  - "Copy to:" buttons let you deep-copy the current frame to another frame (e.g. copy Stand → Walk then adjust hands)
   - Character name editable from within the editor (rename in place)
 
   **Data model** for custom characters (stored in localStorage under `mario-tablet:custom-chars`):
@@ -547,3 +548,4 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [ ] Phase 13 — Super state (Super Nicky sprites, super engine, super frames in character editor)
 ```
 - **2026-04-30** — Phase 11 shipped. New src/char-editor.js: character list view, new-char flow (blank or from template), 6-frame pixel editor (Stand/Walk/Jump; Super frames visible but locked until Phase 13), 54-color NES palette strip, real-time preview. Custom chars stored in localStorage as hex-per-cell 2D arrays. Renderer/player.js support isCustom chars via drawCustomFrame (new export in sprites.js). WALK2_R sprite removed (was duplicate of WALK1_R). HUD: 'Edit' → 'Edit Map', 'Char' → 'Select Char', new 'Char Editor' button (hidden in edit mode). Cache bust bumped to v=45.
+- **2026-04-30** — Phase 11 pixel editor UI polished. (1) Editor is now full-screen (not a modal), capped to game canvas max-width `calc(100vh * 256/224)` and centred — matches the game view column. (2) Real-time preview removed; right panel is now copy row + palette only, giving the palette full vertical space. (3) "Copy to:" buttons added — deep-copies current frame to any other unlocked frame with a green flash confirmation; makes it easy to pose Walk/Jump from a Stand base. (4) Grid cell size bumped 20→28px for better touch targets. Cache bust bumped to v=46.
