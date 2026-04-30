@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MarioCraft</title>
-  <link rel="stylesheet" href="styles.css?v=44">
+  <link rel="stylesheet" href="styles.css?v=45">
 </head>
 <body>
 
@@ -15,8 +15,9 @@
 
   <!-- HUD bar -->
   <div id="hud">
-    <button id="btn-mode">✎ Edit</button>
-    <button id="btn-char">👤 Char</button>
+    <button id="btn-mode">✎ Edit Map</button>
+    <button id="btn-char">👤 Select Char</button>
+    <button id="btn-char-editor">🎨 Char Editor</button>
     <button id="btn-start-over">↺ Start Over</button>
     <!-- Edit-mode tools (hidden in play mode) -->
     <div id="edit-tools" style="display:none; gap:6px; align-items:center;">
@@ -51,6 +52,9 @@
   <div>Rotate to landscape to play</div>
 </div>
 
+<!-- Character Editor overlay (populated by char-editor.js) -->
+<div id="char-editor-overlay" style="display:none"></div>
+
 <!-- Character Select overlay -->
 <div id="char-select-overlay">
   <div id="char-select-box">
@@ -69,6 +73,6 @@
   </div>
 </div>
 
-<script type="module" src="src/main.js?v=44"></script>
+<script type="module" src="src/main.js?v=45"></script>
 </body>
 </html>

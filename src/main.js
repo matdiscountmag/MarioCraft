@@ -1,16 +1,17 @@
 // main.js - Bootstrap + game loop.
 
-import { createInput }   from './input.js?v=43';
-import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js?v=43';
-import { Renderer, createCamera, updateCamera } from './renderer.js?v=43';
-import { createEditor }  from './editor.js?v=43';
-import { createAudio }   from './audio.js?v=43';
-import { createPlayer }  from './entities/player.js?v=44';
-import { createWalker }  from './entities/walker.js?v=44';
-import { PALETTE }       from './sprites.js?v=43';
-import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=43';
-import { createCoinPop, createMushroom } from './items.js?v=43';
-import { CHARACTERS } from './characters.js?v=43';
+import { createInput }   from './input.js?v=45';
+import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from './level.js?v=45';
+import { Renderer, createCamera, updateCamera } from './renderer.js?v=45';
+import { createEditor }  from './editor.js?v=45';
+import { createAudio }   from './audio.js?v=45';
+import { createPlayer }  from './entities/player.js?v=45';
+import { createWalker }  from './entities/walker.js?v=45';
+import { PALETTE }       from './sprites.js?v=45';
+import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=45';
+import { createCoinPop, createMushroom } from './items.js?v=45';
+import { CHARACTERS } from './characters.js?v=45';
+import { createCharEditor } from './char-editor.js?v=45';
 
 const canvas = document.getElementById('game-canvas');
 const input  = createInput();
@@ -46,42 +47,68 @@ let   prevRight      = false;
 const CHAR_KEY = 'mario-tablet:selected-char';
 let selectedCharId = localStorage.getItem(CHAR_KEY) || CHARACTERS[0].id;
 
-function drawCharPreview(previewCanvas, colors) {
+// ── Char editor ───────────────────────────────────────────────────────────────
+
+const charEditor = createCharEditor(CHARACTERS, () => {
+  // Rebuild char cards when editor closes (in case new chars were added/deleted)
+  buildCharCards();
+});
+
+// ── Character preview helpers ─────────────────────────────────────────────────
+
+function drawCharPreview(previewCanvas, char) {
   previewCanvas.width  = 16;
   previewCanvas.height = 16;
   const ctx2 = previewCanvas.getContext('2d');
   ctx2.clearRect(0, 0, 16, 16);
-  const sprite = PLAYER_SMALL_STAND_R;
-  for (let r = 0; r < sprite.length; r++) {
-    const row = sprite[r];
-    for (let c = 0; c < row.length; c++) {
-      const ch = row[c];
-      if (ch === '.' || !PALETTE[ch]) continue;
-      ctx2.fillStyle = (colors && colors[ch]) ? colors[ch] : PALETTE[ch];
-      ctx2.fillRect(c, r, 1, 1);
+  if (char.isCustom && char.frames && char.frames.small_stand) {
+    // Custom character: hex-per-cell frame
+    const frame = char.frames.small_stand;
+    for (let r = 0; r < frame.length; r++) {
+      for (let c = 0; c < frame[r].length; c++) {
+        const color = frame[r][c];
+        if (color && color !== '.') { ctx2.fillStyle = color; ctx2.fillRect(c, r, 1, 1); }
+      }
+    }
+  } else {
+    // Built-in character: palette-key sprite with color overrides
+    const colors = char.colors || {};
+    for (let r = 0; r < PLAYER_SMALL_STAND_R.length; r++) {
+      const row = PLAYER_SMALL_STAND_R[r];
+      for (let c = 0; c < row.length; c++) {
+        const ch = row[c];
+        if (ch === '.' || !PALETTE[ch]) continue;
+        ctx2.fillStyle = colors[ch] || PALETTE[ch];
+        ctx2.fillRect(c, r, 1, 1);
+      }
     }
   }
 }
 
 function cycleChar(dir) {
-  const idx  = CHARACTERS.findIndex(c => c.id === selectedCharId);
-  const next = (idx + dir + CHARACTERS.length) % CHARACTERS.length;
-  selectedCharId = CHARACTERS[next].id;
+  const all  = allChars();
+  const idx  = all.findIndex(c => c.id === selectedCharId);
+  const next = (idx + dir + all.length) % all.length;
+  selectedCharId = all[next].id;
   buildCharCards();
+}
+
+function allChars() {
+  return [...CHARACTERS, ...charEditor.getCustomChars()];
 }
 
 function buildCharCards() {
   const container = document.getElementById('char-cards');
   if (!container) return;
   container.innerHTML = '';
-  for (const char of CHARACTERS) {
+  for (const char of allChars()) {
     const card = document.createElement('div');
     card.className = 'char-card' + (char.id === selectedCharId ? ' selected' : '');
     card.dataset.id = char.id;
 
     const preview = document.createElement('canvas');
     preview.className = 'char-preview';
-    drawCharPreview(preview, char.colors);
+    drawCharPreview(preview, char);
 
     const name = document.createElement('div');
     name.className = 'char-name';
@@ -113,8 +140,14 @@ if (btnCharPlay) {
 }
 
 function startGame() {
-  const char = CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
-  player.colors = Object.keys(char.colors).length > 0 ? char.colors : null;
+  const char = allChars().find(c => c.id === selectedCharId) || CHARACTERS[0];
+  if (char.isCustom) {
+    player.customFrames = char.frames;
+    player.colors = null;
+  } else {
+    player.customFrames = null;
+    player.colors = Object.keys(char.colors || {}).length > 0 ? char.colors : null;
+  }
   try { localStorage.setItem(CHAR_KEY, selectedCharId); } catch (e) {}
   gameStarted = true;
   if (charSelectOverlay) charSelectOverlay.style.display = 'none';
@@ -215,16 +248,19 @@ function updateCoinDisplay() {
 
 // ── HUD button wiring ─────────────────────────────────────────────────────────
 
-const modeBtn     = document.getElementById('btn-mode');
+const modeBtn      = document.getElementById('btn-mode');
 const startOverBtn = document.getElementById('btn-start-over');
+const charBtn      = document.getElementById('btn-char');
+const charEditorBtn = document.getElementById('btn-char-editor');
 
 if (modeBtn) {
   modeBtn.addEventListener('click', () => {
     editor.toggle();
-    modeBtn.textContent = editor.active ? 'Play' : '✎ Edit';
-    if (hudCoins)     hudCoins.style.display     = editor.active ? 'none' : '';
-    if (charBtn)      charBtn.style.display      = editor.active ? 'none' : '';
-    if (startOverBtn) startOverBtn.style.display = editor.active ? 'none' : '';
+    modeBtn.textContent = editor.active ? 'Play' : '✎ Edit Map';
+    if (hudCoins)      hudCoins.style.display      = editor.active ? 'none' : '';
+    if (charBtn)       charBtn.style.display       = editor.active ? 'none' : '';
+    if (charEditorBtn) charEditorBtn.style.display = editor.active ? 'none' : '';
+    if (startOverBtn)  startOverBtn.style.display  = editor.active ? 'none' : '';
     if (editor.active) {
       input.resetRunToggle();
     } else {
@@ -242,7 +278,6 @@ if (startOverBtn) {
   startOverBtn.addEventListener('touchend', e => { e.preventDefault(); window.location.reload(); });
 }
 
-const charBtn = document.getElementById('btn-char');
 if (charBtn) {
   charBtn.addEventListener('click', () => {
     gameStarted = false;
@@ -250,6 +285,11 @@ if (charBtn) {
     if (charSelectOverlay) charSelectOverlay.style.display = 'flex';
   });
   charBtn.addEventListener('touchend', e => { e.preventDefault(); charBtn.click(); });
+}
+
+if (charEditorBtn) {
+  charEditorBtn.addEventListener('click', () => { charEditor.open(); });
+  charEditorBtn.addEventListener('touchend', e => { e.preventDefault(); charEditor.open(); });
 }
 
 const resetBtn = document.getElementById('btn-reset');

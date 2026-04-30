@@ -1,10 +1,9 @@
 // player.js — Nicky, the pink hero. SMB3-style physics.
-import { resolveEntity } from '../physics.js?v=44';
-import { drawSprite } from '../sprites.js?v=43';
+import { resolveEntity } from '../physics.js?v=45';
+import { drawSprite, drawCustomFrame } from '../sprites.js?v=45';
 import {
-  PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R,
-  PLAYER_SMALL_WALK2_R, PLAYER_SMALL_JUMP_R,
-} from '../player-sprites.js?v=43';
+  PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R, PLAYER_SMALL_JUMP_R,
+} from '../player-sprites.js?v=45';
 
 const PHYS = {
   gravity: 0.45, maxFall: 7.0,
@@ -36,7 +35,8 @@ export function createPlayer(spawnCol, spawnRow) {
     airTimer: 0,
     invulnTimer: 0,
     dead: false, deathTimer: 0, deathAlpha: 1.0,
-    colors: null,   // palette overrides set by character select (e.g. { B: '#3060D0' })
+    colors: null,        // palette overrides for built-in chars (e.g. { B: '#3060D0' })
+    customFrames: null,  // hex-per-cell frames for custom chars ({ small_stand, small_walk, small_jump })
 
     // world: optional callbacks { breakBrick(col,row), bumpBlock(col,row) }
     update(dt, input, levelData, world) {
@@ -161,17 +161,23 @@ export function createPlayer(spawnCol, spawnRow) {
     draw(ctx, camera) {
       if (this.invulnTimer > 0 && Math.floor(this.invulnTimer / 4) % 2 === 0) return;
       const sx = Math.round(this.x - camera.x);
-      let sy = Math.round(this.y - camera.y);
-      let sprite;
-      if (this.airTimer > 4 || this.dead) {
-        sprite = PLAYER_SMALL_JUMP_R;
-      } else if (Math.abs(this.vx) > 0.1) {
-        sprite = this.walkFrame === 0 ? PLAYER_SMALL_WALK1_R : PLAYER_SMALL_STAND_R;
-      } else {
-        sprite = PLAYER_SMALL_STAND_R;
-      }
+      const sy = Math.round(this.y - camera.y);
+      const airborne = this.airTimer > 4 || this.dead;
+      const walking  = Math.abs(this.vx) > 0.1;
       if (this.dead) ctx.globalAlpha = this.deathAlpha;
-      drawSprite(ctx, sprite, sx, sy, !this.facingRight, this.colors);
+      if (this.customFrames) {
+        // Custom character — hex-per-cell frames
+        let frame = this.customFrames.small_stand;
+        if (airborne)      frame = this.customFrames.small_jump  || frame;
+        else if (walking)  frame = (this.walkFrame === 0 ? this.customFrames.small_walk : this.customFrames.small_stand) || frame;
+        drawCustomFrame(ctx, frame, sx, sy, !this.facingRight);
+      } else {
+        // Built-in character — palette-key sprites with optional color overrides
+        let sprite = PLAYER_SMALL_STAND_R;
+        if (airborne)     sprite = PLAYER_SMALL_JUMP_R;
+        else if (walking) sprite = this.walkFrame === 0 ? PLAYER_SMALL_WALK1_R : PLAYER_SMALL_STAND_R;
+        drawSprite(ctx, sprite, sx, sy, !this.facingRight, this.colors);
+      }
       if (this.dead) ctx.globalAlpha = 1;
     },
   };

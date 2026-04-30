@@ -546,3 +546,4 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [ ] Phase 12 — Graphics refinement + SFX (Web Audio API sounds, tile polish)
 - [ ] Phase 13 — Super state (Super Nicky sprites, super engine, super frames in character editor)
 ```
+- **2026-04-30** — Phase 11 shipped. New src/char-editor.js: character list view, new-char flow (blank or from template), 6-frame pixel editor (Stand/Walk/Jump; Super frames visible but locked until Phase 13), 54-color NES palette strip, real-time preview. Custom chars stored in localStorage as hex-per-cell 2D arrays. Renderer/player.js support isCustom chars via drawCustomFrame (new export in sprites.js). WALK2_R sprite removed (was duplicate of WALK1_R). HUD: 'Edit' → 'Edit Map', 'Char' → 'Select Char', new 'Char Editor' button (hidden in edit mode). Cache bust bumped to v=45.

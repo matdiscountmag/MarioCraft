@@ -277,6 +277,24 @@ export function drawSprite(ctx, sprite, px, py, flipX = false, colors = null) {
   }
 }
 
+/**
+ * Draw a custom character frame (2D array of hex strings or '.') at game-pixel coords.
+ * frame[row][col] = '#RRGGBB' or '.' for transparent.
+ * flipX=true mirrors horizontally.
+ */
+export function drawCustomFrame(ctx, frame, px, py, flipX = false) {
+  if (!frame) return;
+  for (let r = 0; r < frame.length; r++) {
+    const row = frame[r];
+    for (let c = 0; c < row.length; c++) {
+      const color = flipX ? row[row.length - 1 - c] : row[c];
+      if (!color || color === '.') continue;
+      ctx.fillStyle = color;
+      ctx.fillRect(px + c, py + r, 1, 1);
+    }
+  }
+}
+
 // ── Walker enemy (dome-headed shuffler) ──────────────────────────────────────
 // Two walk frames. Color key: K=black outline, e=tan light, E=brown dark, W=white eyes.
 // Flip horizontally (drawSprite flipX) when facing right.

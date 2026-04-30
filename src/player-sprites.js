@@ -45,26 +45,6 @@ export const PLAYER_SMALL_WALK1_R = [
   '..KKK....KK.....',  // shoe base
 ];
 
-// Walk frame 2 — same pose for now
-export const PLAYER_SMALL_WALK2_R = [
-  '................',
-  '.....KKKKKK.....',
-  '....KBBBBBBKK...',
-  '...KBBBBBBBBBK..',
-  '...KKKZZKZKKK...',
-  '..KZZKKZKZZZZK..',
-  '..KZZKKZZKZZZK..',
-  '...KKZZZKKKKK...',
-  '.KKKKKZZZZZKKKK.',
-  'KZZBBBKKBBKBZZK.',
-  'KZZBBBBKKBKBZZK.',
-  '.KZBBBKKKKKBZK..',
-  '..KKKKKKZ.ZKK...',
-  '.KBBKKKKKKBBK...',
-  '.KBBBK..KBBKK...',
-  '..KKK....KK.....',
-];
-
 // Jump — from smallmariojump.csv. Exactly 16×16, no padding needed.
 export const PLAYER_SMALL_JUMP_R = [
   '.....KKKKKK..KK.',  // cap peak (arm reaching up-right)

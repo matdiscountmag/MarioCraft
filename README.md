@@ -21,6 +21,6 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 8 — Enemy (walker enemy, original sprite, stomp mechanic, editor-placeable)
 - [x] Phase 9 — Character selector (select screen before play, palette-override characters)
 - [x] Phase 10 — Edit mode polish (arrow key scroll, entity rebuild on play, HUD cleanup)
-- [ ] Phase 11 — Character editor (create/edit/name custom characters, pixel grid + NES palette, saved locally)
+- [x] Phase 11 — Character editor (create/edit/name custom characters, pixel grid + NES palette, saved locally)
 - [ ] Phase 12 — Graphics refinement + SFX (sound effects)
 - [ ] Phase 13 — Super state (Super Nicky sprites, super engine, super frames in character editor)
