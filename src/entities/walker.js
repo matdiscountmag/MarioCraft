@@ -1,7 +1,7 @@
 // walker.js — Dome-headed walker enemy. Phase 8.
 // Walks, reverses at walls and ledge edges, stomped from above = defeat.
 
-import { resolveEntity }    from '../physics.js?v=43';
+import { resolveEntity }    from '../physics.js?v=44';
 import { drawSprite }       from '../sprites.js?v=43';
 import { WALKER_1, WALKER_2 } from '../sprites.js?v=43';
 import { TILE_SIZE, getTile, isSolid } from '../level.js?v=43';

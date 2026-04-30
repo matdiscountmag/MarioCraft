@@ -70,10 +70,12 @@ export function resolveEntity(entity, levelData) {
 
   // Ground probe: if not already grounded, check the tile directly below feet.
   // Catches the sub-pixel case where gravity < 1px and no overlap is detected.
+  // 2px horizontal inset prevents a 1-px edge overlap from holding the entity
+  // up when it has visually walked off a tile's corner.
   if (!entity.onGround) {
     const probeRow = Math.floor((entity.y + entity.h) / TILE_SIZE);
-    const colLeft  = Math.floor(entity.x / TILE_SIZE);
-    const colRight = Math.floor((entity.x + entity.w - 1) / TILE_SIZE);
+    const colLeft  = Math.floor((entity.x + 2) / TILE_SIZE);
+    const colRight = Math.floor((entity.x + entity.w - 3) / TILE_SIZE);
     for (let col = colLeft; col <= colRight; col++) {
       if (isSolid(getTile(levelData, col, probeRow))) {
         entity.y  = probeRow * TILE_SIZE - entity.h;  // snap to exact grid
