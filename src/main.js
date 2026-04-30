@@ -11,7 +11,7 @@ import { PALETTE }       from './sprites.js?v=45';
 import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=45';
 import { createCoinPop, createMushroom } from './items.js?v=45';
 import { CHARACTERS } from './characters.js?v=45';
-import { createCharEditor } from './char-editor.js?v=45';
+import { createCharEditor } from './char-editor.js?v=46';
 
 const canvas = document.getElementById('game-canvas');
 const input  = createInput();

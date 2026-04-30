@@ -1,11 +1,12 @@
 // char-editor.js — in-game pixel sprite editor for custom characters
-// Manages: character list view, new-char flow, 6-frame pixel editor.
+// Manages: character list view, new-char flow, full-screen 6-frame pixel editor.
 
-import { PALETTE } from './sprites.js?v=45';
-import { PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R, PLAYER_SMALL_JUMP_R } from './player-sprites.js?v=45';
+import { PALETTE } from './sprites.js?v=46';
+import { PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R, PLAYER_SMALL_JUMP_R } from './player-sprites.js?v=46';
 
-const CUSTOM_KEY = 'mario-tablet:custom-chars';
-const CELL = 20; // px per grid cell
+const CUSTOM_KEY    = 'mario-tablet:custom-chars';
+const CELL          = 28;   // px per grid cell (touch-friendly)
+const PREVIEW_SCALE = 8;    // preview canvas pixel scale (16×8 = 128px wide)
 
 // Standard NES palette (54 colors)
 const NES_COLORS = [
@@ -91,6 +92,7 @@ export function createCharEditor(builtinChars, onClose) {
     overlay.innerHTML = '';
     const box = document.createElement('div');
     box.id = 'ced-box';
+    if (view === 'editor') box.classList.add('ced-fs');
     if (view === 'list')     renderList(box);
     else if (view === 'new') renderNew(box);
     else                     renderEditor(box);
@@ -199,10 +201,10 @@ export function createCharEditor(builtinChars, onClose) {
     return ch;
   }
 
-  // ── Pixel editor ──────────────────────────────────────────────────────────
+  // ── Full-screen pixel editor ──────────────────────────────────────────────
 
   function renderEditor(box) {
-    // Header: name + save/cancel
+    // ── Header bar ──────────────────────────────────────────────────────────
     const header = el('div', 'ced-editor-header');
     const nameInput = Object.assign(document.createElement('input'), {
       type: 'text', value: editingChar.name, id: 'ced-name-input',
@@ -215,28 +217,80 @@ export function createCharEditor(builtinChars, onClose) {
       saveCustomChars(customChars);
       view = 'list'; render();
     }, 'ced-save-btn');
-    header.appendChild(nameInput); header.appendChild(saveBtn);
+    header.appendChild(nameInput);
+    header.appendChild(saveBtn);
     header.appendChild(mkBtn('✕ Cancel', () => { view = 'list'; render(); }));
     box.appendChild(header);
 
-    // Frame tabs
+    // ── Frame tabs ───────────────────────────────────────────────────────────
     const tabs = el('div', 'ced-tabs');
     for (const fd of FRAME_DEFS) {
       const t = mkBtn(fd.locked ? fd.label + '*' : fd.label, () => {
         if (fd.locked) return;
-        activeFrame = fd.id; renderEditorBody(body);
+        activeFrame = fd.id;
+        renderEditorBody(main);
       }, 'ced-tab' + (fd.id === activeFrame ? ' active' : '') + (fd.locked ? ' locked' : ''));
       if (fd.locked) t.title = 'Coming soon (Phase 13)';
       tabs.appendChild(t);
     }
     box.appendChild(tabs);
 
-    // Body: grid + preview — replaced in place when tabs switch
-    const body = el('div', 'ced-body');
-    box.appendChild(body);
-    renderEditorBody(body);
+    // ── Main area (grid + right panel) ───────────────────────────────────────
+    const main = el('div', 'ced-editor-main');
+    box.appendChild(main);
+    renderEditorBody(main);
+  }
 
-    // Palette strip
+  // ── Editor body (grid + right panel) — rebuilt on tab switch ─────────────
+
+  function renderEditorBody(main) {
+    main.innerHTML = '';
+    const fd    = FRAME_DEFS.find(f => f.id === activeFrame);
+    const frame = editingChar.frames[activeFrame];
+
+    // ── Grid canvas (left) ───────────────────────────────────────────────────
+    gridCanvas = document.createElement('canvas');
+    gridCanvas.id     = 'ced-grid';
+    gridCanvas.width  = fd.w * CELL;
+    gridCanvas.height = fd.h * CELL;
+    if (fd.locked) gridCanvas.style.opacity = '0.35';
+    main.appendChild(gridCanvas);
+
+    // ── Right panel ──────────────────────────────────────────────────────────
+    const rightPanel = el('div', 'ced-right-panel');
+    main.appendChild(rightPanel);
+
+    // Preview canvas
+    previewCanvas = document.createElement('canvas');
+    previewCanvas.id     = 'ced-preview';
+    previewCanvas.width  = fd.w * PREVIEW_SCALE;
+    previewCanvas.height = fd.h * PREVIEW_SCALE;
+    rightPanel.appendChild(previewCanvas);
+
+    // Copy-to row
+    const unlockedFrames = FRAME_DEFS.filter(f => !f.locked && f.id !== activeFrame);
+    if (unlockedFrames.length > 0) {
+      const copyRow = el('div', 'ced-copy-row');
+      copyRow.appendChild(el('span', 'ced-copy-label', 'Copy to:'));
+      for (const target of unlockedFrames) {
+        const btn = mkBtn(target.label, () => {
+          editingChar.frames[target.id] = JSON.parse(JSON.stringify(frame));
+          // Visual confirmation flash
+          btn.textContent = '✓ ' + target.label;
+          btn.style.borderColor = '#4a9a4a';
+          btn.style.color = '#58D854';
+          setTimeout(() => {
+            btn.textContent = target.label;
+            btn.style.borderColor = '';
+            btn.style.color = '';
+          }, 800);
+        }, 'ced-copy-btn');
+        copyRow.appendChild(btn);
+      }
+      rightPanel.appendChild(copyRow);
+    }
+
+    // Palette
     const palDiv = el('div', 'ced-palette');
     const eraser = el('div', 'ced-swatch ced-eraser' + (pickedColor === '.' ? ' picked' : ''), '✕');
     eraser.title = 'Transparent (erase)';
@@ -248,36 +302,19 @@ export function createCharEditor(builtinChars, onClose) {
       sw.addEventListener('click', () => { pickedColor = col; refreshPicked(palDiv); });
       palDiv.appendChild(sw);
     }
-    box.appendChild(palDiv);
-  }
+    rightPanel.appendChild(palDiv);
 
-  function renderEditorBody(body) {
-    body.innerHTML = '';
-    const fd = FRAME_DEFS.find(f => f.id === activeFrame);
-    const frame = editingChar.frames[activeFrame];
-
-    gridCanvas = document.createElement('canvas');
-    gridCanvas.id = 'ced-grid';
-    gridCanvas.width  = fd.w * CELL;
-    gridCanvas.height = fd.h * CELL;
-    if (fd.locked) gridCanvas.style.opacity = '0.35';
-    body.appendChild(gridCanvas);
-
-    previewCanvas = document.createElement('canvas');
-    previewCanvas.id = 'ced-preview';
-    previewCanvas.width  = fd.w * 4;
-    previewCanvas.height = fd.h * 4;
-    body.appendChild(previewCanvas);
-
-    // Update tabs active state
+    // ── Update tab active states ─────────────────────────────────────────────
     document.querySelectorAll('.ced-tab').forEach((t, i) => {
       t.classList.toggle('active', FRAME_DEFS[i].id === activeFrame);
     });
 
+    // ── Draw initial state ───────────────────────────────────────────────────
     redrawGrid(fd, frame);
     redrawPreview(fd, frame);
     if (fd.locked) return;
 
+    // ── Paint interaction ────────────────────────────────────────────────────
     function cellAt(clientX, clientY) {
       const rect = gridCanvas.getBoundingClientRect();
       return {
@@ -297,6 +334,8 @@ export function createCharEditor(builtinChars, onClose) {
     gridCanvas.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; paint(t.clientX, t.clientY); }, { passive: false });
     gridCanvas.addEventListener('touchmove',  e => { e.preventDefault(); const t = e.touches[0]; paint(t.clientX, t.clientY); }, { passive: false });
   }
+
+  // ── Canvas draw helpers ───────────────────────────────────────────────────
 
   function redrawGrid(fd, frame) {
     if (!gridCanvas || !frame) return;
@@ -321,7 +360,10 @@ export function createCharEditor(builtinChars, onClose) {
     for (let r = 0; r < fd.h; r++) {
       for (let c = 0; c < fd.w; c++) {
         const color = frame[r][c];
-        if (color && color !== '.') { ctx.fillStyle = color; ctx.fillRect(c * 4, r * 4, 4, 4); }
+        if (color && color !== '.') {
+          ctx.fillStyle = color;
+          ctx.fillRect(c * PREVIEW_SCALE, r * PREVIEW_SCALE, PREVIEW_SCALE, PREVIEW_SCALE);
+        }
       }
     }
   }

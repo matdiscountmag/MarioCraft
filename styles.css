@@ -403,106 +403,150 @@ html, body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.88);
+  background: rgba(0,0,0,0.90);
   z-index: 70;
   align-items: center;
   justify-content: center;
+  font-family: monospace;
+  color: #F8F8F8;
 }
 
+/* Modal box — list view and new-char flow */
 #ced-box {
   background: #111128;
   border: 3px solid #6844FC;
   border-radius: 8px;
-  padding: 14px 18px;
-  max-width: 95vw;
-  max-height: 95vh;
+  padding: 16px 20px;
+  max-width: 92vw;
+  max-height: 92vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #F8F8F8;
-  font-family: monospace;
-  min-width: 320px;
+  min-width: 340px;
 }
+
+/* Full-screen variant — pixel editor only */
+#ced-box.ced-fs {
+  width: 100%; height: 100%;
+  max-width: none; max-height: none;
+  border: none; border-radius: 0;
+  padding: 0; gap: 0;
+  overflow: hidden;
+  background: #0a0a18;
+}
+
+/* ── Shared title ─────────────────────────────────────────────────────── */
 
 .ced-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: #F8B800;
-  letter-spacing: 2px;
-  text-align: center;
-  padding-bottom: 4px;
+  font-size: 18px; font-weight: bold;
+  color: #F8B800; letter-spacing: 2px;
+  text-align: center; padding-bottom: 4px;
 }
 
-/* List view */
-.ced-list { display: flex; flex-direction: column; gap: 4px; min-height: 100px; }
+/* ── List view ────────────────────────────────────────────────────────── */
+
+.ced-list { display: flex; flex-direction: column; gap: 4px; min-height: 80px; }
 .ced-section-hdr { color: #9878F8; font-size: 11px; letter-spacing: 1px; margin-top: 8px; text-transform: uppercase; }
-.ced-list-row {
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-}
+.ced-list-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
 .ced-char-name { flex: 1; font-size: 14px; }
 .ced-readonly  { color: #484868; font-size: 11px; font-style: italic; }
 .ced-empty     { color: #484868; font-size: 12px; padding: 8px 0; }
-.ced-list-row button { font-size: 11px; padding: 3px 8px; background: #2a2a50; border: 1px solid #5050A0; color: #E8E8F8; border-radius: 4px; cursor: pointer; touch-action: manipulation; }
+.ced-list-row button { font-size: 12px; padding: 4px 10px; background: #2a2a50; border: 1px solid #5050A0; color: #E8E8F8; border-radius: 4px; cursor: pointer; touch-action: manipulation; }
 .ced-list-row button:active { background: #3a3a70; }
 
-.ced-footer { display: flex; gap: 8px; justify-content: space-between; margin-top: 6px; }
-.ced-footer button { background: #2a2a50; border: 1px solid #5050A0; color: #E8E8F8; border-radius: 5px; padding: 8px 16px; font-family: monospace; font-size: 14px; cursor: pointer; touch-action: manipulation; }
+.ced-footer { display: flex; gap: 8px; justify-content: space-between; margin-top: 8px; }
+.ced-footer button { background: #2a2a50; border: 1px solid #5050A0; color: #E8E8F8; border-radius: 5px; padding: 9px 18px; font-family: monospace; font-size: 14px; cursor: pointer; touch-action: manipulation; }
 .ced-footer button:active { background: #3a3a70; }
 .ced-new-btn { background: #1a4a1a !important; border-color: #4a9a4a !important; }
 
-/* New char form */
-.ced-new-form { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
-.ced-new-form label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-.ced-new-form select { background: #222248; color: #F8F8F8; border: 1px solid #6844FC; border-radius: 4px; padding: 5px 8px; font-family: monospace; font-size: 13px; flex: 1; }
+/* ── New-char form ────────────────────────────────────────────────────── */
 
-/* Editor header */
-.ced-editor-header { display: flex; align-items: center; gap: 8px; }
+.ced-new-form { display: flex; flex-direction: column; gap: 14px; padding: 8px 0; }
+.ced-new-form label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.ced-new-form select { background: #222248; color: #F8F8F8; border: 1px solid #6844FC; border-radius: 4px; padding: 6px 8px; font-family: monospace; font-size: 13px; flex: 1; }
+
+/* ── Full-screen editor layout ────────────────────────────────────────── */
+
+/* Top header bar */
+.ced-editor-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; flex-shrink: 0;
+  background: #151530;
+  border-bottom: 1px solid #2a2a50;
+}
 #ced-name-input {
   flex: 1; background: #222248; color: #F8F8F8;
-  border: 1px solid #6844FC; border-radius: 4px;
-  padding: 5px 8px; font-family: monospace; font-size: 14px;
+  border: 1px solid #5050A0; border-radius: 4px;
+  padding: 6px 10px; font-family: monospace; font-size: 15px;
 }
-.ced-save-btn { background: #1a4a1a !important; border-color: #4a9a4a !important; }
 .ced-editor-header button {
   background: #2a2a50; border: 1px solid #5050A0; color: #E8E8F8;
-  border-radius: 4px; padding: 6px 14px; font-family: monospace; font-size: 13px; cursor: pointer; touch-action: manipulation;
+  border-radius: 4px; padding: 7px 16px; font-family: monospace;
+  font-size: 13px; cursor: pointer; touch-action: manipulation; white-space: nowrap;
 }
+.ced-editor-header button:active { background: #3a3a70; }
+.ced-save-btn { background: #1a4a1a !important; border-color: #4a9a4a !important; }
 
-/* Frame tabs */
-.ced-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+/* Frame tabs row */
+.ced-tabs {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  padding: 7px 12px; flex-shrink: 0;
+  background: #111128; border-bottom: 1px solid #222248;
+}
 .ced-tab {
   background: #222248; color: #8888B8; border: 1px solid #3a3a6e;
-  border-radius: 4px; padding: 5px 10px; font-family: monospace; font-size: 12px;
+  border-radius: 4px; padding: 6px 14px; font-family: monospace; font-size: 13px;
   cursor: pointer; touch-action: manipulation;
 }
 .ced-tab.active { background: #4428BC; color: #F8F8F8; border-color: #9878F8; }
 .ced-tab.locked { color: #484868; cursor: default; }
 
-/* Editor body: grid + preview side by side */
-.ced-body { display: flex; gap: 14px; align-items: flex-start; }
-#ced-grid {
-  image-rendering: pixelated; image-rendering: crisp-edges;
-  cursor: crosshair; border: 1px solid rgba(255,255,255,0.2);
-  background: #0a0a18;
-}
-#ced-preview {
-  image-rendering: pixelated; image-rendering: crisp-edges;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: #0a0a18;
-  align-self: flex-start;
+/* Main drawing area: grid left, controls right */
+.ced-editor-main {
+  flex: 1; display: flex; gap: 16px;
+  padding: 12px; overflow: hidden; align-items: flex-start;
 }
 
-/* Palette strip */
-.ced-palette { display: flex; flex-wrap: wrap; gap: 3px; max-width: 460px; }
+/* Grid canvas */
+#ced-grid {
+  image-rendering: pixelated; image-rendering: crisp-edges;
+  cursor: crosshair; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: #080814;
+}
+
+/* Right panel: preview + copy + palette */
+.ced-right-panel {
+  display: flex; flex-direction: column; gap: 14px;
+  flex: 1; overflow-y: auto; max-height: 100%;
+}
+
+/* Preview canvas */
+#ced-preview {
+  image-rendering: pixelated; image-rendering: crisp-edges;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: #080814;
+}
+
+/* Copy-to row */
+.ced-copy-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ced-copy-label { color: #9878F8; font-size: 12px; letter-spacing: 0.5px; flex-shrink: 0; }
+.ced-copy-btn {
+  background: #2a2a50; border: 1px solid #5050A0; color: #E8E8F8;
+  border-radius: 4px; padding: 5px 12px; font-family: monospace; font-size: 12px;
+  cursor: pointer; touch-action: manipulation;
+}
+.ced-copy-btn:active { background: #3a3a70; }
+
+/* Palette swatches — larger for touch */
+.ced-palette { display: flex; flex-wrap: wrap; gap: 4px; }
 .ced-swatch {
-  width: 18px; height: 18px;
-  border: 2px solid transparent; border-radius: 2px;
+  width: 26px; height: 26px;
+  border: 2px solid transparent; border-radius: 3px;
   cursor: pointer; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: 9px; color: #888;
+  font-size: 11px; color: #888;
   touch-action: manipulation;
 }
 .ced-swatch:hover  { border-color: rgba(255,255,255,0.5); }
