@@ -5,8 +5,7 @@ import { PALETTE } from './sprites.js?v=46';
 import { PLAYER_SMALL_STAND_R, PLAYER_SMALL_WALK1_R, PLAYER_SMALL_JUMP_R } from './player-sprites.js?v=46';
 
 const CUSTOM_KEY    = 'mario-tablet:custom-chars';
-const CELL          = 28;   // px per grid cell (touch-friendly)
-const PREVIEW_SCALE = 8;    // preview canvas pixel scale (16×8 = 128px wide)
+const CELL = 28;   // px per grid cell (touch-friendly)
 
 // Standard NES palette (54 colors)
 const NES_COLORS = [
@@ -67,7 +66,6 @@ export function createCharEditor(builtinChars, onClose) {
   let pickedColor = '#000000';
   let painting = false;
   let gridCanvas = null;
-  let previewCanvas = null;
 
   // One global mouseup so painting stops even if cursor leaves grid
   window.addEventListener('mouseup', () => { painting = false; });
@@ -260,13 +258,6 @@ export function createCharEditor(builtinChars, onClose) {
     const rightPanel = el('div', 'ced-right-panel');
     main.appendChild(rightPanel);
 
-    // Preview canvas
-    previewCanvas = document.createElement('canvas');
-    previewCanvas.id     = 'ced-preview';
-    previewCanvas.width  = fd.w * PREVIEW_SCALE;
-    previewCanvas.height = fd.h * PREVIEW_SCALE;
-    rightPanel.appendChild(previewCanvas);
-
     // Copy-to row
     const unlockedFrames = FRAME_DEFS.filter(f => !f.locked && f.id !== activeFrame);
     if (unlockedFrames.length > 0) {
@@ -311,7 +302,6 @@ export function createCharEditor(builtinChars, onClose) {
 
     // ── Draw initial state ───────────────────────────────────────────────────
     redrawGrid(fd, frame);
-    redrawPreview(fd, frame);
     if (fd.locked) return;
 
     // ── Paint interaction ────────────────────────────────────────────────────
@@ -327,7 +317,6 @@ export function createCharEditor(builtinChars, onClose) {
       if (col < 0 || col >= fd.w || row < 0 || row >= fd.h || !frame) return;
       frame[row][col] = pickedColor === '.' ? '.' : pickedColor;
       redrawGrid(fd, frame);
-      redrawPreview(fd, frame);
     }
     gridCanvas.addEventListener('mousedown', e => { painting = true; paint(e.clientX, e.clientY); });
     gridCanvas.addEventListener('mousemove', e => { if (painting) paint(e.clientX, e.clientY); });
@@ -351,21 +340,6 @@ export function createCharEditor(builtinChars, onClose) {
     ctx.lineWidth = 0.5;
     for (let c = 0; c <= fd.w; c++) { ctx.beginPath(); ctx.moveTo(c * CELL, 0); ctx.lineTo(c * CELL, fd.h * CELL); ctx.stroke(); }
     for (let r = 0; r <= fd.h; r++) { ctx.beginPath(); ctx.moveTo(0, r * CELL); ctx.lineTo(fd.w * CELL, r * CELL); ctx.stroke(); }
-  }
-
-  function redrawPreview(fd, frame) {
-    if (!previewCanvas || !frame) return;
-    const ctx = previewCanvas.getContext('2d');
-    ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-    for (let r = 0; r < fd.h; r++) {
-      for (let c = 0; c < fd.w; c++) {
-        const color = frame[r][c];
-        if (color && color !== '.') {
-          ctx.fillStyle = color;
-          ctx.fillRect(c * PREVIEW_SCALE, r * PREVIEW_SCALE, PREVIEW_SCALE, PREVIEW_SCALE);
-        }
-      }
-    }
   }
 
   function refreshPicked(palDiv) {
