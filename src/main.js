@@ -5,8 +5,8 @@ import { loadLevel, setTile, getTile, TILE_SIZE, LEVEL_COLS, LEVEL_ROWS } from '
 import { Renderer, createCamera, updateCamera } from './renderer.js?v=43';
 import { createEditor }  from './editor.js?v=43';
 import { createAudio }   from './audio.js?v=43';
-import { createPlayer }  from './entities/player.js?v=43';
-import { createWalker }  from './entities/walker.js?v=43';
+import { createPlayer }  from './entities/player.js?v=44';
+import { createWalker }  from './entities/walker.js?v=44';
 import { PALETTE }       from './sprites.js?v=43';
 import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=43';
 import { createCoinPop, createMushroom } from './items.js?v=43';
