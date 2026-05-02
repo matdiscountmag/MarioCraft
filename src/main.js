@@ -213,9 +213,18 @@ function resolvePlayerWalker(walker) {
 const levelClearOverlay = document.getElementById('level-clear-overlay');
 const levelClearCoins   = document.getElementById('level-clear-coins');
 const btnPlayAgain      = document.getElementById('btn-play-again');
+const btnClearMap       = document.getElementById('btn-clear-map');
 
 if (btnPlayAgain) {
   btnPlayAgain.addEventListener('click', () => window.location.reload());
+}
+
+if (btnClearMap) {
+  btnClearMap.addEventListener('click', () => {
+    localStorage.removeItem('mario-tablet:level:custom');
+    window.location.reload();
+  });
+  btnClearMap.addEventListener('touchend', e => { e.preventDefault(); btnClearMap.click(); });
 }
 
 function triggerLevelClear() {

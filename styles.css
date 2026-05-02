@@ -299,6 +299,25 @@ html, body {
   background: #A03800;
 }
 
+#btn-clear-map {
+  background: #222;
+  color: #aaa;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-family: monospace;
+  font-size: 13px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 1px;
+}
+
+#btn-clear-map:active {
+  background: #333;
+  color: #fff;
+}
+
 /* ── Character Select overlay ─────────────────────────────────────────── */
 
 #char-select-overlay {
