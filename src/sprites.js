@@ -13,7 +13,8 @@ export const PALETTE = {
   Z: '#FCB89C',              // skin
   H: '#883800',              // hair / shoes
   E: '#B85820', e: '#FCB89C', // enemy brown
-  R: '#D03010', r: '#881800', // mushroom red / dark red
+  R: '#E03020', r: '#881800', // mushroom red (SMB3) / dark red
+  P: '#88CCFF',              // teardrop light blue
   U: '#808080', u: '#505050', // used/hard block
   K: '#000000',              // black
   W: '#F8F8F8',              // white
@@ -339,23 +340,23 @@ export const WALKER_2 = [
 
 // -- Items --
 
-// Mushroom powerup: red domed cap with white spots, white stem, two feet.
-// R=#D03010 red, r=#881800 dark red, W=white, u=dark gray (stem)
+// Mushroom powerup: Mat's pixel-perfect design. SMB3 red cap, white belly, teardrop detail.
+// R=#E03020 SMB3 red, W=white, K=black, P=#88CCFF teardrop light blue
 export const ITEM_MUSHROOM = [
-  '................',
-  '......RRRR......',  // cap peak
-  '....RRRRrRRRR...',  // cap widening, dark right edge
-  '...RRRWRRRrRRR..',  // white spot left, shading right
-  '..RRRWWRRRrrRRR.',  // wide spot, deeper shadow
-  '..RRRWWRRRrrRRR.',
-  '..RRRRRRRRRrRRR.',  // cap base
-  '...rrrrrrrrrrrR.',  // under-cap shadow
-  '....WWWWWWWW....',  // stem top
-  '....WuuuuuuW....',  // stem
-  '....WuuuuuuW....',
-  '....WuuuuuuW....',  // stem bottom
-  '...WWuuuuuuWW...',  // feet spreading
-  '...WuuuuuuuuW...',  // feet base
-  '................',
-  '................',
+  '.....KKKKKK.....',  // cap top
+  '...KKRRWWRRKK...',  // cap upper
+  '..KRRRRWWRRRRK..',  // cap mid-upper
+  '.KKWRRWWWWRRWKK.',  // cap spots
+  '.KWWWWWWWWWWWWK.',  // cap base highlight
+  'KRWWWWRRRRWWWWRK',  // body top
+  'KRRWWRRRRRRWWRRK',  // body mid
+  'KRRWWRRRRRRWWRRK',
+  'KRRWWRRRRRRWWRRK',
+  'KRWWWWRRRRWWWWRK',  // body base
+  'KWWKKKKKKKKKKWWK',  // feet outline row
+  'KKKKWWKWWKWWKKKK',  // feet top row
+  '.KKWWWKWWKWWWKK.',  // feet mid
+  '..KWWWWWWPWWWK..',  // feet with teardrop
+  '..KKWWWWWWWWKK..',  // feet base
+  '...KKKKKKKKKK...',  // feet bottom
 ];
