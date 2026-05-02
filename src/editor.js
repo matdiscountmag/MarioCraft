@@ -75,6 +75,9 @@ export function createEditor(canvas, levelData) {
     if (row < SKY_LIMIT_ROW || row >= LEVEL_ROWS) return;
     if (col < 0 || col >= LEVEL_COLS) return;
 
+    // Block placement on the spawn tile — objects here cause an instant level-clear loop
+    if (col === levelData.spawn.x && row === levelData.spawn.y) return;
+
     const item = PALETTE_ITEMS[selectedSlot];
 
     if (item.id === 'erase') {
@@ -209,6 +212,24 @@ export function createEditor(canvas, levelData) {
 
     draw(ctx, camera) {
       if (!active) return;
+
+      // Spawn tile marker — tinted red zone, no placement allowed here
+      const spawnSx = Math.round(levelData.spawn.x * TILE_SIZE - camera.x);
+      const spawnSy = Math.round(levelData.spawn.y * TILE_SIZE - camera.y);
+      if (spawnSx >= 0 && spawnSx < PALETTE_X && spawnSy >= 0 && spawnSy <= VIEWPORT_H) {
+        ctx.fillStyle = 'rgba(255,80,80,0.35)';
+        ctx.fillRect(spawnSx, spawnSy, TILE_SIZE, TILE_SIZE);
+        ctx.strokeStyle = 'rgba(255,80,80,0.9)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(spawnSx + 0.5, spawnSy + 0.5, TILE_SIZE - 1, TILE_SIZE - 1);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = 'bold 7px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('P', spawnSx + TILE_SIZE / 2, spawnSy + TILE_SIZE / 2);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+      }
 
       // Entity sprites (walkers) in the play area
       for (const ent of levelData.entities) {
