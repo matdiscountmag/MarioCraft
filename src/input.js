@@ -169,6 +169,16 @@ export function createInput() {
 
   initTouchControls();
 
+  // ── Prevent accidental pinch-to-zoom on iPad ─────────────────────────────
+  // iOS Safari sometimes ignores the viewport meta user-scalable=no.
+  // Block gesture events and any multi-touch touchmove at the document level.
+  document.addEventListener('gesturestart',  e => e.preventDefault(), { passive: false });
+  document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+  document.addEventListener('gestureend',    e => e.preventDefault(), { passive: false });
+  document.addEventListener('touchmove', e => {
+    if (e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+
   function resetRunToggle() {
     _runToggle = false;
     const btnB = document.getElementById('btn-b');
