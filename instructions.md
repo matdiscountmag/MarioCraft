@@ -45,7 +45,7 @@ If the user asks for something that crosses the line, push back politely and off
 
 ---
 
-## 3. Player character
+## 3. Player hero
 
 **Name: Nicky.** A humanoid hero with a pink cap and purple overalls. Two active power states (Tailed removed from scope).
 
@@ -148,7 +148,7 @@ Mushroom red:      #D03010    # R in sprite palettes
 Mushroom red dk:   #881800    # r in sprite palettes
 ```
 
-Nicky's sprite colors: brick-red cap/shoes (B=#C84800), peach skin (Z=#FCB89C), black outline (K). These placeholder colors are now final — no color pass planned. The N/n/V entries remain in the palette for potential use by other characters added in Phase 9.
+Nicky's sprite colors: brick-red cap/shoes (B=#C84800), peach skin (Z=#FCB89C), black outline (K). These placeholder colors are now final — no color pass planned. The N/n/V entries remain in the palette for potential use by other heroes added in Phase 9.
 
 ---
 
@@ -302,11 +302,11 @@ HUD has Play/Edit toggle (button label flips: "Edit" in play mode, "Play" in edi
 | Button | Label | Notes |
 |---|---|---|
 | Toggle editor | "Edit Map" | Was "Edit" — renamed for clarity |
-| Character select | "Select Char" | Was "Char" — renamed for clarity |
-| Character editor | "Char Editor" | New in Phase 11 — opens the pixel sprite editor |
+| Hero select | "Select Hero" | Was "Hero" — renamed for clarity |
+| Hero editor | "Hero Editor" | New in Phase 11 — opens the pixel sprite editor |
 | Start Over | "Start Over" | Unchanged |
 
-The **"Char Editor"** button is hidden in map editor mode (same rule as "Select Char"). All three character-related buttons are hidden when map editor is active — only "Edit Map" (relabelled "Play") and "⚠ Clear Map Edits" are shown.
+The **"Hero Editor"** button is hidden in map editor mode (same rule as "Select Hero"). All three hero-related buttons are hidden when map editor is active — only "Edit Map" (relabelled "Play") and "⚠ Clear Map Edits" are shown.
 
 **Edit mode shows:**
 - Faint white grid overlay on the play area
@@ -357,15 +357,15 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
 - **Phase 6 — Graphics overhaul** ✅: Background decorations, improved tiles (ground, brick, used block), Small Nicky stand/walk/jump sprites from CSV art, walk animation. **Deferred to Phase 10**: Super Nicky sprites. Nicky color pass removed from scope — placeholder colors are final.
 - **Phase 7 — Finish line**: Goal post tile placeable in editor. Touching it shows "Level Clear!" message and pauses play. Death animation (brief fall + fade) when player takes a fatal hit, then respawn at spawn marker. No lives, no game over screen.
 - **Phase 8 — Enemy**: Single walker enemy (goomba-style dome-head, original sprite). Walks, reverses at walls, stomp = defeat, side touch = damage. Placeable in edit mode via palette strip.
-- **Phase 9 — Character selector**: Simple character select screen shown before play. Player picks a character, hits Play. Characters share the same sprite artwork — each is defined by a palette color override (a `colors` object mapping sprite palette keys to new hex values). No CSV upload needed per character. Nicky (default, no overrides) is always first; additional characters appended to `characters.js`. `drawSprite` accepts an optional `colors` parameter for per-draw overrides.
-- **Phase 10 — Edit mode polish**: Arrow key scroll in edit mode; walkers placed in editor now appear on return to play (entity array rebuild on mode switch); Export button removed; Char button hidden in edit mode; Start Over button added to play-mode HUD (reload without clearing level edits, distinct from Reset which wipes the level).
-- **Phase 11 — Character editor**: In-game UI for creating and editing fully custom playable characters with pixel-art sprites.
+- **Phase 9 — Hero selector**: Simple hero select screen shown before play. Player picks a hero, hits Play. Heroes share the same sprite artwork — each is defined by a palette color override (a `colors` object mapping sprite palette keys to new hex values). No CSV upload needed per hero. Nicky (default, no overrides) is always first; additional heroes appended to `heroes.js`. `drawSprite` accepts an optional `colors` parameter for per-draw overrides.
+- **Phase 10 — Edit mode polish**: Arrow key scroll in edit mode; walkers placed in editor now appear on return to play (entity array rebuild on mode switch); Export button removed; Hero button hidden in edit mode; Start Over button added to play-mode HUD (reload without clearing level edits, distinct from Reset which wipes the level).
+- **Phase 11 — Hero editor**: In-game UI for creating and editing fully custom playable heroes with pixel-art sprites.
 
-  **Entry point**: "Character Editor" button on the character select screen.
+  **Entry point**: "Hero Editor" button on the hero select screen.
 
-  **Character list view**: shows all user-created characters with Edit, Rename, and Delete options. Built-in characters (Nicky, Dex) are listed as read-only — no edit/delete.
+  **Hero list view**: shows all user-created heroes with Edit, Rename, and Delete options. Built-in heroes (Nicky, Dex) are listed as read-only — no edit/delete.
 
-  **New Character flow**: prompt for name → choose "From Scratch" (blank grid) or "From Template" (copy frames from any existing character, including built-ins).
+  **New Hero flow**: prompt for name → choose "From Scratch" (blank grid) or "From Template" (copy frames from any existing hero, including built-ins).
 
   **Pixel editor** (full-screen, capped to game canvas max-width):
   - 6 frame tabs: Small Stand, Small Walk, Small Jump, Super Stand, Super Walk, Super Jump
@@ -373,13 +373,13 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
   - Grid cell size: 28px (touch-friendly)
   - Full NES 54-color palette in the right panel (one click per cell — no drag-to-paint required). No preview pane — palette gets the full right-panel space.
   - "Copy to:" buttons let you deep-copy the current frame to another frame (e.g. copy Stand → Walk then adjust hands)
-  - Character name editable from within the editor (rename in place)
+  - Hero name editable from within the editor (rename in place)
 
-  **Data model** for custom characters (stored in localStorage under `mario-tablet:custom-chars`):
+  **Data model** for custom heroes (stored in localStorage under `mario-tablet:custom-heroes`):
   ```js
   {
     id: 'custom_<timestamp>',
-    name: 'My Character',
+    name: 'My Hero',
     isCustom: true,
     frames: {
       small_stand: [ /* 16 strings of 16 chars each — hex color or '.' */ ],
@@ -391,19 +391,19 @@ Each phase ends with a working, playable build. Don't bundle phases. Deploy to P
     }
   }
   ```
-  Custom characters use direct hex colors per cell (no key/palette-override system). The key system (K/B/Z etc.) remains in use only for built-in characters and environment objects (pipes, tiles) where CSV-based refinement is needed.
+  Custom heroes use direct hex colors per cell (no key/palette-override system). The key system (K/B/Z etc.) remains in use only for built-in heroes and environment objects (pipes, tiles) where CSV-based refinement is needed.
 
-  **Renderer integration**: `player.js` / `renderer.js` check if the active character has `isCustom: true` and a `frames` object; if so, use those arrays directly instead of the global `PLAYER_SMALL_*` constants. Falls back to Nicky frames if a frame is missing.
+  **Renderer integration**: `player.js` / `renderer.js` check if the active hero has `isCustom: true` and a `frames` object; if so, use those arrays directly instead of the global `PLAYER_SMALL_*` constants. Falls back to Nicky frames if a frame is missing.
 
-  **New file**: `src/char-editor.js`. Keep under 300 lines; split if needed.
+  **New file**: `src/hero-editor.js`. Keep under 300 lines; split if needed.
 
-  **HUD changes** (do at start of Phase 11): rename "Edit" → "Edit Map", rename "Char" → "Select Char", add new "Char Editor" button. "Char Editor" and "Select Char" are both hidden when map editor is active (same rule already applied to "Char" in Phase 10).
+  **HUD changes** (do at start of Phase 11): rename "Edit" → "Edit Map", rename "Hero" → "Select Hero", add new "Hero Editor" button. "Hero Editor" and "Select Hero" are both hidden when map editor is active (same rule already applied to "Hero" in Phase 10).
 
   **Walk frame cleanup** (do at start of Phase 11): remove `PLAYER_SMALL_WALK2_R` from `player-sprites.js` — it is identical to `WALK1_R`. Update animation logic in `player.js` to use a single walk frame (`PLAYER_SMALL_WALK1_R`), keeping the existing walk timer and bob intact.
 
 - **Phase 12 — Graphics refinement + SFX**: SFX via Web Audio API (no library, ~80 lines in audio.js — jump, coin collect, block hit, death tones). Tile and environment sprite polish as needed (pipe, blocks, etc.) via CSV refinement workflow.
 
-- **Phase 13 — Super state**: Super Nicky sprites (16×32), super state engine work (brick-breaking from below, hit shrinks Super→Small), and super frame authoring unlocked in the character editor (super_stand/super_walk/super_jump tabs become active). Until this phase, super frame tabs in the character editor are visible but marked "Coming soon."
+- **Phase 13 — Super state**: Super Nicky sprites (16×32), super state engine work (brick-breaking from below, hit shrinks Super→Small), and super frame authoring unlocked in the hero editor (super_stand/super_walk/super_jump tabs become active). Until this phase, super frame tabs in the hero editor are visible but marked "Coming soon."
 
 ### Removed from scope (may revisit)
 - Lives counter and game over screen
@@ -506,14 +506,14 @@ Append-only. Format: `YYYY-MM-DD — <change>`.
 - **2026-04-27** — Physics ground probe snap fix: probe now snaps `y = probeRow * TILE_SIZE - h` and zeros `vy` in addition to setting `onGround=true`. Without this, sub-pixel gravity drift caused 1px vertical flicker during standing. Walk animation: switched to alternating `WALK1_R` ↔ `STAND_R` (was both frames identical, causing sliding look). Walk timer threshold tuned from 20 → 4 for correct feel; do not revert. Cache bust at v=32.
 - **2026-04-27** — Phase 6 shipped. Remaining art (Nicky color pass, Super Nicky sprites, enemy sprites) deferred to Phase 8 (final art pass).
 - **2026-04-27** — Phase 7 started. Coin counter added as DOM element in #hud (not canvas — canvas text is always fuzzy at 256×224 resolution). #hud background removed (was dark bar covering gameplay). Mobile B button changed to tap-to-toggle run (keyboard hold unchanged). Walk animation threshold tuned to 3. Version strings added to input.js and renderer.js imports (were missing). Cache bust at v=38. Completed: background decorations (clouds/hills/bushes) world-positioned at wy≈562–736 so they're visible during play (camera.y≈544); draw order sky→hills→bushes→clouds→tiles. Ground tile improved with dark green shadow + tan separator row. Brick tile redesigned with black mortar grid (upper/lower offset bricks). Used block redesigned with black border (matching ? block family) + gray interior. Mushroom sprite added (new R/r palette entries). Small Nicky standing sprite replaced with pixel-perfect CSV-derived art (K/B/Z placeholder colors; intended pink/purple pending color pass). Walk frame added (arms-out pose from CSV, 1px bob). Bug fixed: canvas `arc(..., Math.PI, 0, true)` draws bottom half (downward), not top — all background arcs changed to `false`. ES module cache-busting rule established: bump version in import statements too, not just index.html. Cache bust at v=18.
-- **2026-04-29** — Phase plan finalized. Removed from scope: lives, game over screen, Shellback/Spikeplant/Cannonball enemies, Tailed powerup, Nicky color pass (placeholder colors now permanent). Final phase order: 7 = finish line (goal post, Level Clear, death + respawn); 8 = walker enemy (single dome-head type, stomp mechanic, editor-placeable); 9 = character selector (simple pick screen before play, each character added via CSV upload per session); 10 = Super Nicky sprites + SFX (Web Audio API, no library). "May revisit" items recorded in §12.
+- **2026-04-29** — Phase plan finalized. Removed from scope: lives, game over screen, Shellback/Spikeplant/Cannonball enemies, Tailed powerup, Nicky color pass (placeholder colors now permanent). Final phase order: 7 = finish line (goal post, Level Clear, death + respawn); 8 = walker enemy (single dome-head type, stomp mechanic, editor-placeable); 9 = hero selector (simple pick screen before play, each hero added via CSV upload per session); 10 = Super Nicky sprites + SFX (Web Audio API, no library). "May revisit" items recorded in §12.
 - **2026-04-29** — Phase 8 shipped. Walker enemy: dome-headed original sprite (WALKER_1/WALKER_2 in sprites.js), two walk frames. Walks at 0.6px/frame, reverses at walls (vx zeroed by physics) and ledge edges (ground probe ahead). Stomp from above = defeat + 5px bounce; side contact = Small→die or Super→shrink+90 invuln frames. Editor: 10th palette slot (entity type), tap to place/remove walker, teal border highlight in edit mode, erase tool also removes entities. Two default walkers at col 15 and col 43. editor.js truncation bug fixed (file was cut mid-line since Phase 7). Cache bust at v=40.
 - **2026-04-29** — Phase 7 shipped. Goal tile added (checkerboard yellow/white, 16×16). Touching it shows "LEVEL CLEAR!" DOM overlay (NES gold border, coin count, Play Again button). Death: fall off world bottom triggers dead flag — player falls and fades to transparent over 60 frames, then window.location.reload() (no respawn, no lives). Editor palette expanded to 9 slots (goal added as slot 9). Goal post placed at [45][92] in default level. Cache bust at v=39.
-- **2026-04-29** — Phase 9 shipped. Character select screen shown on load before game starts. Characters share sprites; each defined by a `colors` palette override map in `characters.js`. `drawSprite` updated to accept optional `colors` arg (backward-compatible). player.js gets `colors: null` field set by `startGame()`. Two characters: Nicky (default palette) and Dex (B → deep blue). DOM overlay `#char-select-overlay` with dynamic cards built from CHARACTERS array; `drawCharPreview()` renders 16×16 sprite onto card canvas with color overrides, CSS-scaled to 64×64 pixelated. Selection persisted in localStorage. Enter/Space starts game from keyboard. Pink Nicky color correction requirement removed — Nicky's placeholder colors (B=#C84800 brick-red cap/shoes, Z=#FCB89C skin) are the final canonical colors. Cache bust at v=42.
-- **2026-04-29** — Phase 10 shipped. Edit mode polish: (1) Arrow key scroll — editor.js tracks its own key state independently of input.js; ArrowLeft/Right/Up/Down scroll camera at 4px/frame; keys cleared on mode toggle to prevent stuck input. (2) Walker entity rebuild — switching from edit to play mode now rebuilds the live `entities` array from `level.entities`, so walkers placed in the editor appear immediately. (3) HUD cleanup: Export button removed; Char and Start Over buttons hidden in edit mode; Reset button relabelled "⚠ Clear Map Edits". (4) Start Over button added to play-mode HUD — `window.location.reload()` without clearing localStorage, restarting from spawn with level edits intact. Cache bust at v=43.
-- **2026-04-29** — HUD button labels clarified: "Edit" → "Edit Map", "Char" → "Select Char", new "Char Editor" button added for Phase 11. "Char Editor" hidden in map editor mode (same rule as "Select Char"). §11 HUD table added.
-- **2026-04-29** — Phase 12 (Character Editor) designed and added to plan. Key decisions: (1) custom characters use direct hex colors per cell, not the key/palette-override system — full NES 54-color palette picker; (2) 6 frames total (small + super × stand/walk/jump), super frames stored as null until Phase 13 Super engine ships; (3) built-in characters (Nicky, Dex) are read-only in the editor; (4) walk animation consolidated to single frame (WALK1 == WALK2, remove duplicate); (5) fixed objects (pipes, tiles) keep the key-based system for CSV refinement workflow; (6) new file src/char-editor.js. Phases reordered: Character Editor → Phase 11, Graphics/SFX → Phase 12, Super state → Phase 13.
-- **2026-04-29** — Post-Phase-9 UX polish. (1) "👤 Char" HUD button added beside Edit — reopens character select overlay mid-session and pauses game. (2) Death animation cutoff reduced 90→65 frames; pressing jump after 30 frames also skips to reload immediately. (3) Jump button (A) confirms both overlays: starts game on character select, reloads on Level Clear (30-frame lockout to prevent accidental trigger). (4) Left/right d-pad and arrow keys cycle characters on the select screen. Bug: wiring left/right in both a keydown handler AND the loop's edge detection caused a double-cycle — with 2 characters the cycles cancelled out and nothing appeared to happen. Fix: remove from keydown handler, use loop edge detection only (works for keyboard and touch uniformly).
+- **2026-04-29** — Phase 9 shipped. Hero select screen shown on load before game starts. Heroes share sprites; each defined by a `colors` palette override map in `heroes.js`. `drawSprite` updated to accept optional `colors` arg (backward-compatible). player.js gets `colors: null` field set by `startGame()`. Two heroes: Nicky (default palette) and Dex (B → deep blue). DOM overlay `#hero-select-overlay` with dynamic cards built from HEROES array; `drawHeroPreview()` renders 16×16 sprite onto card canvas with color overrides, CSS-scaled to 64×64 pixelated. Selection persisted in localStorage. Enter/Space starts game from keyboard. Pink Nicky color correction requirement removed — Nicky's placeholder colors (B=#C84800 brick-red cap/shoes, Z=#FCB89C skin) are the final canonical colors. Cache bust at v=42.
+- **2026-04-29** — Phase 10 shipped. Edit mode polish: (1) Arrow key scroll — editor.js tracks its own key state independently of input.js; ArrowLeft/Right/Up/Down scroll camera at 4px/frame; keys cleared on mode toggle to prevent stuck input. (2) Walker entity rebuild — switching from edit to play mode now rebuilds the live `entities` array from `level.entities`, so walkers placed in the editor appear immediately. (3) HUD cleanup: Export button removed; Hero and Start Over buttons hidden in edit mode; Reset button relabelled "⚠ Clear Map Edits". (4) Start Over button added to play-mode HUD — `window.location.reload()` without clearing localStorage, restarting from spawn with level edits intact. Cache bust at v=43.
+- **2026-04-29** — HUD button labels clarified: "Edit" → "Edit Map", "Hero" → "Select Hero", new "Hero Editor" button added for Phase 11. "Hero Editor" hidden in map editor mode (same rule as "Select Hero"). §11 HUD table added.
+- **2026-04-29** — Phase 11 (Hero Editor) designed and added to plan. Key decisions: (1) custom heroes use direct hex colors per cell, not the key/palette-override system — full NES 54-color palette picker; (2) 6 frames total (small + super × stand/walk/jump), super frames stored as null until Phase 13 Super engine ships; (3) built-in heroes (Nicky, Dex) are read-only in the editor; (4) walk animation consolidated to single frame (WALK1 == WALK2, remove duplicate); (5) fixed objects (pipes, tiles) keep the key-based system for CSV refinement workflow; (6) new file src/hero-editor.js. Phases reordered: Hero Editor → Phase 11, Graphics/SFX → Phase 12, Super state → Phase 13.
+- **2026-04-29** — Post-Phase-9 UX polish. (1) "👤 Hero" HUD button added beside Edit — reopens hero select overlay mid-session and pauses game. (2) Death animation cutoff reduced 90→65 frames; pressing jump after 30 frames also skips to reload immediately. (3) Jump button (A) confirms both overlays: starts game on hero select, reloads on Level Clear (30-frame lockout to prevent accidental trigger). (4) Left/right d-pad and arrow keys cycle heroes on the select screen. Bug: wiring left/right in both a keydown handler AND the loop's edge detection caused a double-cycle — with 2 heroes the cycles cancelled out and nothing appeared to happen. Fix: remove from keydown handler, use loop edge detection only (works for keyboard and touch uniformly).
 
 ---
 
@@ -541,11 +541,13 @@ A single-level NES-style platformer with an in-game level editor, optimized for 
 - [x] Phase 6 — Graphics overhaul (backgrounds, improved tiles, Small Nicky sprites)
 - [x] Phase 7 — Finish line (goal post, Level Clear, death animation + respawn)
 - [x] Phase 8 — Enemy (walker, stomp mechanic, editor-placeable)
-- [x] Phase 9 — Character selector (pick screen, palette-override characters)
+- [x] Phase 9 — Hero selector (pick screen, palette-override heroes)
 - [x] Phase 10 — Edit mode polish (arrow scroll, entity rebuild, HUD cleanup)
-- [ ] Phase 11 — Character editor (create/edit/name custom characters, pixel grid + NES palette, saved locally)
+- [ ] Phase 11 — Hero editor (create/edit/name custom heroes, pixel grid + NES palette, saved locally)
 - [ ] Phase 12 — Graphics refinement + SFX (Web Audio API sounds, tile polish)
-- [ ] Phase 13 — Super state (Super Nicky sprites, super engine, super frames in character editor)
+- [ ] Phase 13 — Super state (Super Nicky sprites, super engine, super frames in hero editor)
 ```
-- **2026-04-30** — Phase 11 shipped. New src/char-editor.js: character list view, new-char flow (blank or from template), 6-frame pixel editor (Stand/Walk/Jump; Super frames visible but locked until Phase 13), 54-color NES palette strip, real-time preview. Custom chars stored in localStorage as hex-per-cell 2D arrays. Renderer/player.js support isCustom chars via drawCustomFrame (new export in sprites.js). WALK2_R sprite removed (was duplicate of WALK1_R). HUD: 'Edit' → 'Edit Map', 'Char' → 'Select Char', new 'Char Editor' button (hidden in edit mode). Cache bust bumped to v=45.
+- **2026-04-30** — Phase 11 shipped. New src/hero-editor.js: hero list view, new-hero flow (blank or from template), 6-frame pixel editor (Stand/Walk/Jump; Super frames visible but locked until Phase 13), 54-color NES palette strip, real-time preview. Custom heroes stored in localStorage as hex-per-cell 2D arrays. Renderer/player.js support isCustom heroes via drawCustomFrame (new export in sprites.js). WALK2_R sprite removed (was duplicate of WALK1_R). HUD: 'Edit' → 'Edit Map', 'Hero' → 'Select Hero', new 'Hero Editor' button (hidden in edit mode). Cache bust bumped to v=45.
+- **2026-05-02** — Naming consistency pass: renamed "Character" → "Hero" throughout. `characters.js` → `heroes.js`, `char-editor.js` → `hero-editor.js`, `CHARACTERS` → `HEROES`, `createCharEditor` → `createHeroEditor`, all DOM IDs/CSS classes (`char-card` → `hero-card`, etc.), HUD button labels ("Select Char" → "Select Hero", "Char Editor" → "Hero Editor"), overlay title "CHOOSE YOUR CHARACTER" → "CHOOSE YOUR HERO", localStorage key updated to `mario-tablet:selected-hero`. Cache bust bumped to v=47.
+- **2026-05-02** — HUD layout rearranged: "Start Over" and "Select Hero" moved to left group; "Edit Map" and "Hero Editor" moved to right group. No logic changes needed — main.js hides/shows buttons by element ID, not by group. index.html only change.
 - **2026-04-30** — Phase 11 pixel editor UI polished. (1) Editor is now full-screen (not a modal), capped to game canvas max-width `calc(100vh * 256/224)` and centred — matches the game view column. (2) Real-time preview removed; right panel is now copy row + palette only, giving the palette full vertical space. (3) "Copy to:" buttons added — deep-copies current frame to any other unlocked frame with a green flash confirmation; makes it easy to pose Walk/Jump from a Stand base. (4) Grid cell size bumped 20→28px for better touch targets. Cache bust bumped to v=46.

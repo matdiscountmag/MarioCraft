@@ -327,9 +327,9 @@ html, body {
   color: #fff;
 }
 
-/* ── Character Select overlay ─────────────────────────────────────────── */
+/* ── Hero Select overlay ─────────────────────────────────────────── */
 
-#char-select-overlay {
+#hero-select-overlay {
   display: flex; /* visible by default; hidden via JS after PLAY! */
   position: absolute;
   inset: 0;
@@ -340,7 +340,7 @@ html, body {
   justify-content: center;
 }
 
-#char-select-box {
+#hero-select-box {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -351,7 +351,7 @@ html, body {
   padding: 28px 40px;
 }
 
-#char-select-title {
+#hero-select-title {
   font-family: monospace;
   font-size: 22px;
   font-weight: bold;
@@ -360,13 +360,13 @@ html, body {
   text-shadow: 0 0 10px rgba(248,184,0,0.5);
 }
 
-#char-cards {
+#hero-cards {
   display: flex;
   flex-direction: row;
   gap: 20px;
 }
 
-.char-card {
+.hero-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -381,23 +381,23 @@ html, body {
   transition: border-color 0.1s, background 0.1s;
 }
 
-.char-card.selected {
+.hero-card.selected {
   border-color: #F8B800;
   background: #2a2000;
 }
 
-.char-card:active {
+.hero-card:active {
   background: #222;
 }
 
-.char-preview {
+.hero-preview {
   width: 64px;
   height: 64px;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
 
-.char-name {
+.hero-name {
   font-family: monospace;
   font-size: 16px;
   font-weight: bold;
@@ -405,7 +405,7 @@ html, body {
   letter-spacing: 1px;
 }
 
-#btn-char-play {
+#btn-hero-play {
   margin-top: 4px;
   background: #C84800;
   color: #F8F8F8;
@@ -421,13 +421,13 @@ html, body {
   letter-spacing: 2px;
 }
 
-#btn-char-play:active {
+#btn-hero-play:active {
   background: #A03800;
 }
 
-/* ── Character Editor overlay ─────────────────────────────────────────── */
+/* ── Hero Editor overlay ─────────────────────────────────────────── */
 
-#char-editor-overlay {
+#hero-editor-overlay {
   display: none;
   position: fixed;
   inset: 0;
@@ -478,7 +478,7 @@ html, body {
 .ced-list { display: flex; flex-direction: column; gap: 4px; min-height: 80px; }
 .ced-section-hdr { color: #9878F8; font-size: 11px; letter-spacing: 1px; margin-top: 8px; text-transform: uppercase; }
 .ced-list-row { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
-.ced-char-name { flex: 1; font-size: 14px; }
+.ced-hero-name { flex: 1; font-size: 14px; }
 .ced-readonly  { color: #484868; font-size: 11px; font-style: italic; }
 .ced-empty     { color: #484868; font-size: 12px; padding: 8px 0; }
 .ced-list-row button { font-size: 12px; padding: 4px 10px; background: #2a2a50; border: 1px solid #5050A0; color: #E8E8F8; border-radius: 4px; cursor: pointer; touch-action: manipulation; }

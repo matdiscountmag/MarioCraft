@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>MarioCraft</title>
-  <link rel="stylesheet" href="styles.css?v=46">
+  <link rel="stylesheet" href="styles.css?v=47">
 </head>
 <body>
 
@@ -17,9 +17,8 @@
   <div id="hud">
     <!-- Left group -->
     <div id="hud-left">
-      <button id="btn-mode">✎ Edit Map</button>
-      <button id="btn-char">👤 Select Char</button>
-      <button id="btn-char-editor">🎨 Char Editor</button>
+      <button id="btn-start-over">↺ Start Over</button>
+      <button id="btn-hero">👤 Select Hero</button>
       <!-- Edit-mode tools (hidden in play mode) -->
       <div id="edit-tools" style="display:none; gap:6px; align-items:center;">
         <button id="btn-reset">⚠ Clear Map Edits</button>
@@ -29,7 +28,8 @@
     <span id="hud-coins"><span id="hud-coin-icon">●</span> ×<span id="hud-coin-count">00</span></span>
     <!-- Right group -->
     <div id="hud-right">
-      <button id="btn-start-over">↺ Start Over</button>
+      <button id="btn-mode">✎ Edit Map</button>
+      <button id="btn-hero-editor">🎨 Hero Editor</button>
     </div>
   </div>
 
@@ -58,15 +58,15 @@
   <div>Rotate to landscape to play</div>
 </div>
 
-<!-- Character Editor overlay (populated by char-editor.js) -->
-<div id="char-editor-overlay" style="display:none"></div>
+<!-- Hero Editor overlay (populated by hero-editor.js) -->
+<div id="hero-editor-overlay" style="display:none"></div>
 
-<!-- Character Select overlay -->
-<div id="char-select-overlay">
-  <div id="char-select-box">
-    <div id="char-select-title">CHOOSE YOUR CHARACTER</div>
-    <div id="char-cards"></div>
-    <button id="btn-char-play">PLAY!</button>
+<!-- Hero Select overlay -->
+<div id="hero-select-overlay">
+  <div id="hero-select-box">
+    <div id="hero-select-title">CHOOSE YOUR HERO</div>
+    <div id="hero-cards"></div>
+    <button id="btn-hero-play">PLAY!</button>
   </div>
 </div>
 
@@ -80,6 +80,6 @@
   </div>
 </div>
 
-<script type="module" src="src/main.js?v=46"></script>
+<script type="module" src="src/main.js?v=47"></script>
 </body>
 </html>

@@ -10,8 +10,8 @@ import { createWalker }  from './entities/walker.js?v=45';
 import { PALETTE }       from './sprites.js?v=45';
 import { PLAYER_SMALL_STAND_R } from './player-sprites.js?v=45';
 import { createCoinPop, createMushroom } from './items.js?v=45';
-import { CHARACTERS } from './characters.js?v=45';
-import { createCharEditor } from './char-editor.js?v=46';
+import { HEROES } from './heroes.js?v=47';
+import { createHeroEditor } from './hero-editor.js?v=47';
 
 const canvas = document.getElementById('game-canvas');
 const input  = createInput();
@@ -42,28 +42,28 @@ let   gameStarted    = false;
 let   prevLeft       = false;
 let   prevRight      = false;
 
-// ── Character select ──────────────────────────────────────────────────────────
+// ── Hero select ──────────────────────────────────────────────────────────────
 
-const CHAR_KEY = 'mario-tablet:selected-char';
-let selectedCharId = localStorage.getItem(CHAR_KEY) || CHARACTERS[0].id;
+const HERO_KEY = 'mario-tablet:selected-hero';
+let selectedHeroId = localStorage.getItem(HERO_KEY) || HEROES[0].id;
 
-// ── Char editor ───────────────────────────────────────────────────────────────
+// ── Hero editor ───────────────────────────────────────────────────────────────
 
-const charEditor = createCharEditor(CHARACTERS, () => {
-  // Rebuild char cards when editor closes (in case new chars were added/deleted)
-  buildCharCards();
+const heroEditor = createHeroEditor(HEROES, () => {
+  // Rebuild hero cards when editor closes (in case new heroes were added/deleted)
+  buildHeroCards();
 });
 
-// ── Character preview helpers ─────────────────────────────────────────────────
+// ── Hero preview helpers ─────────────────────────────────────────────────
 
-function drawCharPreview(previewCanvas, char) {
+function drawHeroPreview(previewCanvas, hero) {
   previewCanvas.width  = 16;
   previewCanvas.height = 16;
   const ctx2 = previewCanvas.getContext('2d');
   ctx2.clearRect(0, 0, 16, 16);
-  if (char.isCustom && char.frames && char.frames.small_stand) {
-    // Custom character: hex-per-cell frame
-    const frame = char.frames.small_stand;
+  if (hero.isCustom && hero.frames && hero.frames.small_stand) {
+    // Custom hero: hex-per-cell frame
+    const frame = hero.frames.small_stand;
     for (let r = 0; r < frame.length; r++) {
       for (let c = 0; c < frame[r].length; c++) {
         const color = frame[r][c];
@@ -71,8 +71,8 @@ function drawCharPreview(previewCanvas, char) {
       }
     }
   } else {
-    // Built-in character: palette-key sprite with color overrides
-    const colors = char.colors || {};
+    // Built-in hero: palette-key sprite with color overrides
+    const colors = hero.colors || {};
     for (let r = 0; r < PLAYER_SMALL_STAND_R.length; r++) {
       const row = PLAYER_SMALL_STAND_R[r];
       for (let c = 0; c < row.length; c++) {
@@ -85,41 +85,41 @@ function drawCharPreview(previewCanvas, char) {
   }
 }
 
-function cycleChar(dir) {
-  const all  = allChars();
-  const idx  = all.findIndex(c => c.id === selectedCharId);
+function cycleHero(dir) {
+  const all  = allHeroes();
+  const idx  = all.findIndex(h => h.id === selectedHeroId);
   const next = (idx + dir + all.length) % all.length;
-  selectedCharId = all[next].id;
-  buildCharCards();
+  selectedHeroId = all[next].id;
+  buildHeroCards();
 }
 
-function allChars() {
-  return [...CHARACTERS, ...charEditor.getCustomChars()];
+function allHeroes() {
+  return [...HEROES, ...heroEditor.getCustomHeroes()];
 }
 
-function buildCharCards() {
-  const container = document.getElementById('char-cards');
+function buildHeroCards() {
+  const container = document.getElementById('hero-cards');
   if (!container) return;
   container.innerHTML = '';
-  for (const char of allChars()) {
+  for (const hero of allHeroes()) {
     const card = document.createElement('div');
-    card.className = 'char-card' + (char.id === selectedCharId ? ' selected' : '');
-    card.dataset.id = char.id;
+    card.className = 'hero-card' + (hero.id === selectedHeroId ? ' selected' : '');
+    card.dataset.id = hero.id;
 
     const preview = document.createElement('canvas');
-    preview.className = 'char-preview';
-    drawCharPreview(preview, char);
+    preview.className = 'hero-preview';
+    drawHeroPreview(preview, hero);
 
     const name = document.createElement('div');
-    name.className = 'char-name';
-    name.textContent = char.name;
+    name.className = 'hero-name';
+    name.textContent = hero.name;
 
     card.appendChild(preview);
     card.appendChild(name);
 
     function selectCard() {
-      selectedCharId = char.id;
-      document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+      selectedHeroId = hero.id;
+      document.querySelectorAll('.hero-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
     }
     card.addEventListener('click', selectCard);
@@ -129,28 +129,28 @@ function buildCharCards() {
   }
 }
 
-const charSelectOverlay = document.getElementById('char-select-overlay');
-const btnCharPlay       = document.getElementById('btn-char-play');
+const heroSelectOverlay = document.getElementById('hero-select-overlay');
+const btnHeroPlay       = document.getElementById('btn-hero-play');
 
-buildCharCards();
+buildHeroCards();
 
-if (btnCharPlay) {
-  btnCharPlay.addEventListener('click', startGame);
-  btnCharPlay.addEventListener('touchend', e => { e.preventDefault(); startGame(); });
+if (btnHeroPlay) {
+  btnHeroPlay.addEventListener('click', startGame);
+  btnHeroPlay.addEventListener('touchend', e => { e.preventDefault(); startGame(); });
 }
 
 function startGame() {
-  const char = allChars().find(c => c.id === selectedCharId) || CHARACTERS[0];
-  if (char.isCustom) {
-    player.customFrames = char.frames;
+  const hero = allHeroes().find(h => h.id === selectedHeroId) || HEROES[0];
+  if (hero.isCustom) {
+    player.customFrames = hero.frames;
     player.colors = null;
   } else {
     player.customFrames = null;
-    player.colors = Object.keys(char.colors || {}).length > 0 ? char.colors : null;
+    player.colors = Object.keys(hero.colors || {}).length > 0 ? hero.colors : null;
   }
-  try { localStorage.setItem(CHAR_KEY, selectedCharId); } catch (e) {}
+  try { localStorage.setItem(HERO_KEY, selectedHeroId); } catch (e) {}
   gameStarted = true;
-  if (charSelectOverlay) charSelectOverlay.style.display = 'none';
+  if (heroSelectOverlay) heroSelectOverlay.style.display = 'none';
 }
 
 // ── World callbacks ───────────────────────────────────────────────────────────
@@ -259,17 +259,17 @@ function updateCoinDisplay() {
 
 const modeBtn      = document.getElementById('btn-mode');
 const startOverBtn = document.getElementById('btn-start-over');
-const charBtn      = document.getElementById('btn-char');
-const charEditorBtn = document.getElementById('btn-char-editor');
+const heroBtn      = document.getElementById('btn-hero');
+const heroEditorBtn = document.getElementById('btn-hero-editor');
 
 if (modeBtn) {
   modeBtn.addEventListener('click', () => {
     editor.toggle();
     modeBtn.textContent = editor.active ? 'Play' : '✎ Edit Map';
-    if (hudCoins)      hudCoins.style.display      = editor.active ? 'none' : '';
-    if (charBtn)       charBtn.style.display       = editor.active ? 'none' : '';
-    if (charEditorBtn) charEditorBtn.style.display = editor.active ? 'none' : '';
-    if (startOverBtn)  startOverBtn.style.display  = editor.active ? 'none' : '';
+    if (hudCoins)       hudCoins.style.display       = editor.active ? 'none' : '';
+    if (heroBtn)        heroBtn.style.display        = editor.active ? 'none' : '';
+    if (heroEditorBtn)  heroEditorBtn.style.display  = editor.active ? 'none' : '';
+    if (startOverBtn)   startOverBtn.style.display   = editor.active ? 'none' : '';
     if (editor.active) {
       input.resetRunToggle();
     } else {
@@ -287,18 +287,18 @@ if (startOverBtn) {
   startOverBtn.addEventListener('touchend', e => { e.preventDefault(); window.location.reload(); });
 }
 
-if (charBtn) {
-  charBtn.addEventListener('click', () => {
+if (heroBtn) {
+  heroBtn.addEventListener('click', () => {
     gameStarted = false;
-    buildCharCards();
-    if (charSelectOverlay) charSelectOverlay.style.display = 'flex';
+    buildHeroCards();
+    if (heroSelectOverlay) heroSelectOverlay.style.display = 'flex';
   });
-  charBtn.addEventListener('touchend', e => { e.preventDefault(); charBtn.click(); });
+  heroBtn.addEventListener('touchend', e => { e.preventDefault(); heroBtn.click(); });
 }
 
-if (charEditorBtn) {
-  charEditorBtn.addEventListener('click', () => { charEditor.open(); });
-  charEditorBtn.addEventListener('touchend', e => { e.preventDefault(); charEditor.open(); });
+if (heroEditorBtn) {
+  heroEditorBtn.addEventListener('click', () => { heroEditor.open(); });
+  heroEditorBtn.addEventListener('touchend', e => { e.preventDefault(); heroEditor.open(); });
 }
 
 const resetBtn = document.getElementById('btn-reset');
@@ -314,7 +314,7 @@ if (resetBtn) {
 window.addEventListener('keydown', e => {
   if (e.code === 'Backquote') renderer.debug = !renderer.debug;
   if (e.code === 'KeyP') player.state = player.state === 'super' ? 'small' : 'super';
-  // Character select: Enter/Space/Z = start (left/right handled in loop)
+  // Hero select: Enter/Space/Z = start (left/right handled in loop)
   if (!gameStarted && (e.code === 'Enter' || e.code === 'Space' || e.code === 'KeyZ')) {
     startGame();
   }
@@ -338,9 +338,9 @@ function loop(now) {
 
   // ── Overlay input handling ────────────────────────────────────────────────
   if (!gameStarted) {
-    // D-pad left/right cycles character (edge detection — fires once per press)
-    if (input.state.left  && !prevLeft)  cycleChar(-1);
-    if (input.state.right && !prevRight) cycleChar(1);
+    // D-pad left/right cycles hero (edge detection — fires once per press)
+    if (input.state.left  && !prevLeft)  cycleHero(-1);
+    if (input.state.right && !prevRight) cycleHero(1);
     // Jump button (A) = PLAY!
     if (input.state.jumpPressed) startGame();
   }
