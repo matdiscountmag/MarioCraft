@@ -104,19 +104,19 @@ export const TILE_BRICK = [
 export const TILE_QBLOCK = [
   'KKKKKKKKKKKKKKKK',
   'KYYYYYYYYYYYYYYK',
-  'KYKBBBBBBBBBBKBK',
-  'KYBBYYYYYYBBBBBK',
-  'KYBYYYYYYYYYBBBK',
-  'KYBYYYKKKYYYKBBK',
-  'KYBKKKKBBYYYKBBK',
-  'KYBBBBYYYYYKKBBK',
-  'KYBBBBYYYKKKBBBK',
-  'KYBBBBBKKKBBBBBK',
-  'KYBBBBYYYBBBBBBK',
-  'KYBBBBYYYKBBBBBK',
-  'KYBBBBBKKKBBBBBK',
-  'KYKBBBBBBBBBBKBK',
-  'KYBBBBBBBBBBBBBK',
+  'KYKyyyyyyyyyyKyK',
+  'KYyyYYYYYYyyyyyK',
+  'KYyYYYYYYYYYyyyK',
+  'KYyYYYKKKYYYKyyK',
+  'KYyKKKKyyYYYKyyK',
+  'KYyyyyYYYYYKKyyK',
+  'KYyyyyYYYKKKyyyK',
+  'KYyyyyyKKKyyyyyK',
+  'KYyyyyYYYyyyyyyK',
+  'KYyyyyYYYKyyyyyK',
+  'KYyyyyyKKKyyyyyK',
+  'KYKyyyyyyyyyyKyK',
+  'KYyyyyyyyyyyyyyK',
   'KKKKKKKKKKKKKKKK',
 ];
 
@@ -296,46 +296,47 @@ export function drawCustomFrame(ctx, frame, px, py, flipX = false) {
   }
 }
 
-// ── Walker enemy (dome-headed shuffler) ──────────────────────────────────────
-// Two walk frames. Color key: K=black outline, e=tan light, E=brown dark, W=white eyes.
-// Flip horizontally (drawSprite flipX) when facing right.
+// ── Walker enemy (mushroom-cap shuffler) ─────────────────────────────────────
+// Two walk frames, from Mat's Goomba1.csv / Goomba2.csv designs.
+// Color key: K=black (outline/eyes), E=body brown (#B85820), Y=yellow (feet/brow accents),
+// W=white (highlight), .=transparent. Flip horizontally (drawSprite flipX) when facing right.
 
 export const WALKER_1 = [
-  '................',
-  '....KKKKKKKK....',
-  '...KeeeeeeeeK...',
-  '..KeeeeeeeeeeK..',
-  '..KeeeeeeeeeeK..',
-  '..KeeWWeeWWeeK..',  // eyes: W=white sclera
-  '..KeeKKeeKKeeK..',  // pupils: K=black
-  '..KeeeeeeeeeeK..',
-  '..KEEEEEEEEEEK..',  // belly: E=darker brown
-  '..KEEEEEEEEEEK..',
-  '..KKKKEEEEKKKK..',  // foot junction
-  '...KEEK..KEEK...',  // feet together
-  '...KEEK..KEEK...',
-  '...KEEK..KEEK...',
-  '...KEKK..KEKK...',  // ankle detail
-  '...KKKK..KKKK...',  // sole — row 15, flush with ground
+  '......KKKK......',
+  '....KKEEEEKK....',
+  '...KKKKEEKKKK...',
+  '....KYKEEKYK....',
+  '...KEYYKKYYEK...',
+  '.KKEEYKEEKYEEKK.',
+  'KEEEEYKEEKYEEEEK',
+  'KEEEEEEEEEEEEEEK',
+  'KEEYKKKKKKKKYEEK',
+  '.KEYEEEEEEEEYEK.',
+  '..KKKKKKKKKKKK..',
+  '...KKYYYYYK.....',
+  '...KEYYYYYYKKKK.',
+  '.KKKKEYYYYKKKKWK',
+  'KWKKKKEEEEKKKKKK',
+  'KKKKKK..........',
 ];
 
 export const WALKER_2 = [
-  '................',
-  '....KKKKKKKK....',
-  '...KeeeeeeeeK...',
-  '..KeeeeeeeeeeK..',
-  '..KeeeeeeeeeeK..',
-  '..KeeWWeeWWeeK..',
-  '..KeeKKeeKKeeK..',
-  '..KeeeeeeeeeeK..',
-  '..KEEEEEEEEEEK..',
-  '..KEEEEEEEEEEK..',
-  '..KKKKEEEEKKKK..',
-  '..KEEK....KEEK..',  // feet spread wider (walk step)
-  '..KEEK....KEEK..',
-  '..KEEK....KEEK..',
-  '..KEKK....KEKK..',  // ankle detail
-  '..KKKK....KKKK..',  // sole — row 15, flush with ground
+  '......KKKK......',
+  '....KKEEEEKK....',
+  '...KKKKEEKKKK...',
+  '....KYKEEKYK....',
+  '...KEYYKKYYEK...',
+  '.KKEEYKEEKYEEKK.',
+  'KEEEEYKEEKYEEEEK',
+  'KEEEEEEEEEEEEEEK',
+  'KEEYKKKKKKKKYEEK',
+  '.KEYEEEEEEEEYEK.',
+  '..KKKKKKKKKKKK..',
+  '.....KYYYYYKK...',
+  '.KKKKYYYYYYEK...',
+  'KWKKKKYYYYEKKKK.',
+  'KKKKKKEEEEKKKWKK',
+  '..........KKKKKK',
 ];
 
 // -- Items --
