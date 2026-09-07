@@ -43,8 +43,11 @@ export function resolveEntity(entity, levelData) {
 
   if (entity.vy > 0) {
     const row = Math.floor((entity.y + entity.h - 1) / TILE_SIZE);
-    const colLeft  = Math.floor(entity.x / TILE_SIZE);
-    const colRight = Math.floor((entity.x + entity.w - 1) / TILE_SIZE);
+    // Same 2px/3px horizontal inset as the ground probe below: a bare 1px
+    // corner overlap with a tile shouldn't be enough to stand on, or the
+    // entity can rest visibly hanging a few pixels past a ledge's edge.
+    const colLeft  = Math.floor((entity.x + 2) / TILE_SIZE);
+    const colRight = Math.floor((entity.x + entity.w - 3) / TILE_SIZE);
     for (let col = colLeft; col <= colRight; col++) {
       if (isSolid(getTile(levelData, col, row))) {
         entity.y = row * TILE_SIZE - entity.h;
